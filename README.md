@@ -1,6 +1,8 @@
 # plantit-queue
 
 [![Build](https://github.com/dubsector/plantit-queue/actions/workflows/build.yml/badge.svg)](https://github.com/dubsector/plantit-queue/actions/workflows/build.yml)
+[![CodeQL](https://github.com/dubsector/plantit-queue/actions/workflows/codeql.yml/badge.svg)](https://github.com/dubsector/plantit-queue/actions/workflows/codeql.yml)
+[![Dependency Check](https://github.com/dubsector/plantit-queue/actions/workflows/dependency-check.yml/badge.svg)](https://github.com/dubsector/plantit-queue/actions/workflows/dependency-check.yml)
 [![zizmor](https://github.com/dubsector/plantit-queue/actions/workflows/zizmor.yml/badge.svg)](https://github.com/dubsector/plantit-queue/actions/workflows/zizmor.yml)
 
 Proxy-level queue system for [Plant It](https://github.com/dubsector/plantit) game servers, running on [Velocity](https://papermc.io/software/velocity).
