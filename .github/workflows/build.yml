@@ -19,12 +19,12 @@ jobs:
       short_sha: ${{ steps.sha.outputs.short_sha }}
     steps:
       - name: Checkout
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v4
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
 
       - name: Set up JDK 21
-        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v4
+        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
         with:
           java-version: '21'
           distribution: 'temurin'
@@ -47,7 +47,7 @@ jobs:
         run: mv target/plantit-queue-*.jar "target/plantit-queue-${VERSION}+${SHORT_SHA}.jar"
 
       - name: Upload plugin artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: plugin-jar
           path: target/plantit-queue-*.jar
@@ -60,7 +60,7 @@ jobs:
       actions: write
     steps:
       - name: Download built JAR
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: plugin-jar
           path: plugin-jar/
@@ -78,7 +78,7 @@ jobs:
             -o smoke-proxy/velocity.jar
 
       - name: Set up JDK 21
-        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v4
+        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5.4.0
         with:
           java-version: '21'
           distribution: 'temurin'
@@ -177,7 +177,7 @@ jobs:
 
       - name: Upload proxy log
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: velocity-smoke-log
           path: smoke-proxy/proxy.log
@@ -193,7 +193,7 @@ jobs:
       actions: read
     steps:
       - name: Download plugin artifact
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: plugin-jar
           path: plugin-jar/
@@ -204,7 +204,7 @@ jobs:
           SHORT_SHA: ${{ needs.build.outputs.short_sha }}
           VERSION: ${{ needs.build.outputs.version }}
         run: |
-          printf '> [!WARNING]\n> **Use at your own risk.** This is an automated pre-release build and may be unstable. Not recommended for production use.\n\nBuilt from [%s](https://github.com/${{ github.repository }}/commit/%s)\n\n**Requires:** Velocity 3.3.x · Java 21\n' \
+          printf '> [!WARNING]\n> **Use at your own risk.** This is an automated pre-release build and may be unstable. Not recommended for production use.\n\nBuilt from [%s](https://github.com/${{ github.repository }}/commit/%s)\n\n**Requires:** Velocity 3.5.x · Java 21\n' \
             "$SHORT_SHA" "$GITHUB_SHA" > release-notes.md
 
           gh release create "build-${SHORT_SHA}" \
