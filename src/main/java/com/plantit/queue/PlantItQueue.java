@@ -56,7 +56,7 @@ public class PlantItQueue {
             config = new QueueConfig();
         }
 
-        queueManager = new QueueManager(server, config);
+        queueManager = new QueueManager(server, config, logger);
 
         server.getChannelRegistrar().register(QUEUE_CHANNEL);
 

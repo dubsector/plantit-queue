@@ -13,6 +13,9 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title;
 
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import org.slf4j.Logger;
+
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -39,6 +42,7 @@ public class QueueManager {
             Key.key("minecraft:block.note_block.pling"), Sound.Source.MASTER, 0.6f, 1.5f);
 
     private final ProxyServer proxy;
+    private final Logger logger;
     private QueueConfig config;
 
     /** Global queue — defines position order and membership. */
@@ -57,9 +61,10 @@ public class QueueManager {
     private boolean stopped = false;
     private QueueScaler scaler = null;
 
-    public QueueManager(ProxyServer proxy, QueueConfig config) {
+    public QueueManager(ProxyServer proxy, QueueConfig config, Logger logger) {
         this.proxy = proxy;
         this.config = config;
+        this.logger = logger;
     }
 
     public void updateConfig(QueueConfig config) {
@@ -308,6 +313,7 @@ public class QueueManager {
         proxy.getAllPlayers().stream()
                 .filter(p -> p.hasPermission("plantit.admin"))
                 .forEach(p -> p.sendMessage(prefixed));
+        logger.info("[DEBUG] {}", PlainTextComponentSerializer.plainText().serialize(message));
     }
 
     // -------------------------------------------------------------------------
