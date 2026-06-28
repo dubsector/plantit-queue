@@ -4,12 +4,14 @@ import com.plantit.queue.command.PiqCommand;
 import com.plantit.queue.config.QueueConfig;
 import com.plantit.queue.listener.ConnectionListener;
 import com.plantit.queue.listener.MessagingListener;
+import com.plantit.queue.plan.PlanHook;
 import com.plantit.queue.scaler.PterodactylConfig;
 import com.plantit.queue.scaler.QueueScaler;
 import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
+import com.velocitypowered.api.plugin.Dependency;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
@@ -26,7 +28,8 @@ import java.util.concurrent.TimeUnit;
         name = "PlantIt Queue",
         version = "1.0.0-SNAPSHOT",
         description = "Proxy-level queue system for Plant It game servers",
-        authors = {"dubsector"}
+        authors = {"dubsector"},
+        dependencies = {@Dependency(id = "plan", optional = true)}
 )
 public class PlantItQueue {
 
@@ -89,6 +92,16 @@ public class PlantItQueue {
             }
         } catch (Exception e) {
             logger.warn("Pterodactyl scaler not loaded: {}", e.getMessage());
+        }
+
+        // Optional Plan integration — registers queue metrics in the Plan web UI
+        try {
+            PlanHook.register(queueManager);
+            logger.info("Hooked into Plan — queue metrics available in the web UI.");
+        } catch (NoClassDefFoundError ignored) {
+            // Plan not installed
+        } catch (Exception e) {
+            logger.warn("Plan hook failed to register: {}", e.getMessage());
         }
 
         if (config.isDebugMode()) {

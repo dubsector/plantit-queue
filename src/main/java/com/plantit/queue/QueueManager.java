@@ -17,12 +17,15 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.slf4j.Logger;
 
 import java.time.Duration;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class QueueManager {
 
@@ -61,6 +64,13 @@ public class QueueManager {
     private boolean stopped = false;
     private QueueScaler scaler = null;
 
+    // Metrics — persisted in memory for Plan integration
+    private final AtomicLong totalQueueJoins = new AtomicLong(0);
+    private final AtomicLong totalDispatches = new AtomicLong(0);
+    private final Map<String, AtomicLong> serverDispatchCounts = new ConcurrentHashMap<>();
+    private final Map<UUID, AtomicLong> playerJoinCounts = new ConcurrentHashMap<>();
+    private final Map<UUID, String> playerLastServer = new ConcurrentHashMap<>();
+
     public QueueManager(ProxyServer proxy, QueueConfig config, Logger logger) {
         this.proxy = proxy;
         this.config = config;
@@ -98,6 +108,8 @@ public class QueueManager {
         }
 
         queue.add(player.getUniqueId());
+        totalQueueJoins.incrementAndGet();
+        playerJoinCounts.computeIfAbsent(player.getUniqueId(), k -> new AtomicLong()).incrementAndGet();
         int pos = queue.size();
 
         String target = pickServer();
@@ -186,6 +198,10 @@ public class QueueManager {
             assignment.remove(uuid);
             BossBar bar = bossBars.remove(uuid);
             lastKnownPosition.remove(uuid);
+
+            totalDispatches.incrementAndGet();
+            serverDispatchCounts.computeIfAbsent(serverName, k -> new AtomicLong()).incrementAndGet();
+            playerLastServer.put(uuid, serverName);
 
             proxy.getPlayer(uuid).ifPresent(p -> {
                 if (bar != null) p.hideBossBar(bar);
@@ -412,6 +428,20 @@ public class QueueManager {
 
     public boolean isStopped() {
         return stopped;
+    }
+
+    // Plan metrics accessors
+    public long getTotalQueueJoins() { return totalQueueJoins.get(); }
+    public long getTotalDispatches() { return totalDispatches.get(); }
+    public long getPlayerQueueJoins(UUID uuid) {
+        AtomicLong c = playerJoinCounts.get(uuid);
+        return c != null ? c.get() : 0L;
+    }
+    public String getPlayerLastServer(UUID uuid) { return playerLastServer.get(uuid); }
+    public Map<String, Long> getServerDispatchCounts() {
+        Map<String, Long> result = new LinkedHashMap<>();
+        serverDispatchCounts.forEach((k, v) -> result.put(k, v.get()));
+        return Collections.unmodifiableMap(result);
     }
 
     // -------------------------------------------------------------------------

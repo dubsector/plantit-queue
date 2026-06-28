@@ -32,6 +32,10 @@
             <id>papermc</id>
             <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
+        <repository>
+            <id>plan-repo</id>
+            <url>https://repo.playeranalytics.net/releases/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -39,6 +43,13 @@
             <groupId>com.velocitypowered</groupId>
             <artifactId>velocity-api</artifactId>
             <version>3.5.0-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- Plan Player Analytics — optional soft dependency for queue metrics -->
+        <dependency>
+            <groupId>com.djrapitops</groupId>
+            <artifactId>plan</artifactId>
+            <version>5.6.0</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
