@@ -108,6 +108,41 @@ public class PiqCommand implements SimpleCommand {
                 invocation.source().sendMessage(PREFIX.append(
                         Component.text("Config reloaded.", NamedTextColor.GREEN)));
             }
+            case "open" -> {
+                if (!invocation.source().hasPermission("plantit.admin")) {
+                    invocation.source().sendMessage(PREFIX.append(
+                            Component.text("You don't have permission to do that.", NamedTextColor.RED)));
+                    return;
+                }
+                if (!queueManager.isDebugMode()) {
+                    invocation.source().sendMessage(PREFIX.append(
+                            Component.text("This command is only available in debug mode.", NamedTextColor.RED)));
+                    return;
+                }
+                if (args.length < 3) {
+                    invocation.source().sendMessage(PREFIX.append(
+                            Component.text("Usage: /piq open <server> <slots>", NamedTextColor.RED)));
+                    return;
+                }
+                String serverName = args[1];
+                int slots;
+                try {
+                    slots = Integer.parseInt(args[2]);
+                    if (slots < 1) throw new NumberFormatException();
+                } catch (NumberFormatException e) {
+                    invocation.source().sendMessage(PREFIX.append(
+                            Component.text("Slots must be a positive number.", NamedTextColor.RED)));
+                    return;
+                }
+                String error = queueManager.debugOpen(serverName, slots);
+                if (error != null) {
+                    invocation.source().sendMessage(PREFIX.append(
+                            Component.text(error, NamedTextColor.RED)));
+                } else {
+                    invocation.source().sendMessage(PREFIX.append(
+                            Component.text("[DEBUG] Simulated SLOT_OPEN:" + slots + " for '" + serverName + "'.", NamedTextColor.GOLD)));
+                }
+            }
             default -> sendHelp(invocation);
         }
     }
@@ -139,6 +174,10 @@ public class PiqCommand implements SimpleCommand {
                     .append(Component.text("— Re-enable the queue", NamedTextColor.GRAY)));
             invocation.source().sendMessage(Component.text("  /piq reload  ", NamedTextColor.GOLD)
                     .append(Component.text("— Reload config from disk", NamedTextColor.GRAY)));
+            if (queueManager.isDebugMode()) {
+                invocation.source().sendMessage(Component.text("  /piq open <server> <slots>  ", NamedTextColor.GOLD)
+                        .append(Component.text("— [DEBUG] Simulate SLOT_OPEN from a server", NamedTextColor.GRAY)));
+            }
         }
         invocation.source().sendMessage(Component.empty());
     }
@@ -147,6 +186,9 @@ public class PiqCommand implements SimpleCommand {
     public List<String> suggest(Invocation invocation) {
         if (invocation.arguments().length <= 1) {
             if (invocation.source().hasPermission("plantit.admin")) {
+                if (queueManager.isDebugMode()) {
+                    return List.of("join", "leave", "pos", "stop", "start", "reload", "open");
+                }
                 return List.of("join", "leave", "pos", "stop", "start", "reload");
             }
             return List.of("join", "leave", "pos");

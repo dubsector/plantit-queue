@@ -402,6 +402,23 @@ public class QueueManager {
         return stopped;
     }
 
+    public boolean isDebugMode() {
+        return config.isDebugMode();
+    }
+
+    /**
+     * Debug-only: manually simulate a SLOT_OPEN signal from a server.
+     * Returns an error message on failure, or null on success.
+     */
+    public String debugOpen(String velocityServerName, int slots) {
+        var server = proxy.getServer(velocityServerName);
+        if (server.isEmpty()) return "Unknown server '" + velocityServerName + "' — check velocity.toml";
+        if (queue.isEmpty()) return "Queue is empty — nobody to dispatch";
+        int dispatched = Math.min(slots, queue.size());
+        dispatchPlayers(dispatched, server.get());
+        return null;
+    }
+
     // Plan metrics accessors
     public long getTotalQueueJoins() { return totalQueueJoins.get(); }
     public long getTotalDispatches() { return totalDispatches.get(); }
