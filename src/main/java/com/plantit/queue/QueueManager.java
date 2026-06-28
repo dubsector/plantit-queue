@@ -282,23 +282,6 @@ public class QueueManager {
     // Debug
     // -------------------------------------------------------------------------
 
-    private void debugDispatch(Player player) {
-        for (String name : gameServerNames()) {
-            var registered = proxy.getServer(name);
-            if (registered.isPresent()) {
-                broadcastDebug(Component.text("[DEBUG] ", NamedTextColor.GOLD, TextDecoration.BOLD)
-                        .append(Component.text(player.getUsername(), NamedTextColor.YELLOW))
-                        .append(Component.text(" joined queue → dispatching to ", NamedTextColor.GOLD))
-                        .append(Component.text(name, NamedTextColor.YELLOW)));
-                dispatchPlayers(1, registered.get());
-                return;
-            }
-        }
-        broadcastDebug(Component.text("[DEBUG] ", NamedTextColor.GOLD, TextDecoration.BOLD)
-                .append(Component.text(player.getUsername(), NamedTextColor.YELLOW))
-                .append(Component.text(" joined queue — no reachable game server found.", NamedTextColor.RED)));
-    }
-
     private void broadcastDebug(Component message) {
         Component prefixed = PREFIX.append(message);
         proxy.getAllPlayers().stream()
