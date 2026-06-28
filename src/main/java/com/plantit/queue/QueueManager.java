@@ -130,7 +130,7 @@ public class QueueManager {
                 .append(Component.text("Position: ", NamedTextColor.GRAY))
                 .append(Component.text("#" + pos, NamedTextColor.YELLOW))
                 .append(Component.text("  |  ", NamedTextColor.DARK_GRAY))
-                .append(Component.text("Waiting for a server...", NamedTextColor.GRAY)));
+                .append(buildServerStatus()));
         player.sendMessage(PREFIX
                 .append(Component.text("Use ", NamedTextColor.DARK_GRAY))
                 .append(Component.text("/piq leave", NamedTextColor.GREEN))
@@ -328,7 +328,7 @@ public class QueueManager {
                         .append(Component.text("  |  ", NamedTextColor.DARK_GRAY))
                         .append(Component.text(total + " in queue", NamedTextColor.GRAY))
                         .append(Component.text("  |  ", NamedTextColor.DARK_GRAY))
-                        .append(Component.text("Waiting for a server...", NamedTextColor.GRAY))
+                        .append(buildServerStatus())
                         .append(Component.text("  |  ", NamedTextColor.DARK_GRAY))
                         .append(Component.text("/piq leave", NamedTextColor.GREEN));
                 p.sendActionBar(actionBar);
@@ -424,6 +424,17 @@ public class QueueManager {
         List<String> configured = config.getGameServers();
         if (!configured.isEmpty()) return configured;
         return proxy.getAllServers().stream().map(s -> s.getServerInfo().getName()).toList();
+    }
+
+    private Component buildServerStatus() {
+        if (scaler != null && scaler.isAnyServerStarting()) {
+            long eta = scaler.getStartupEtaSeconds();
+            if (eta <= 0) {
+                return Component.text("Server ready any moment...", NamedTextColor.YELLOW);
+            }
+            return Component.text("Server starting... ~" + eta + "s", NamedTextColor.YELLOW);
+        }
+        return Component.text("Waiting for a server...", NamedTextColor.GRAY);
     }
 
     private Component serverTag(String serverName) {
