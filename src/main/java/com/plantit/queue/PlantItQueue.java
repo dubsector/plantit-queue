@@ -1,0 +1,83 @@
+package com.plantit.queue;
+
+import com.plantit.queue.command.QueueCommand;
+import com.plantit.queue.config.QueueConfig;
+import com.plantit.queue.listener.ConnectionListener;
+import com.plantit.queue.listener.MessagingListener;
+import com.velocitypowered.api.event.Subscribe;
+import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
+import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
+import com.velocitypowered.api.plugin.Plugin;
+import com.velocitypowered.api.plugin.annotation.DataDirectory;
+import com.velocitypowered.api.proxy.ProxyServer;
+import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
+import org.slf4j.Logger;
+
+import javax.inject.Inject;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.concurrent.TimeUnit;
+
+@Plugin(
+        id = "plantit-queue",
+        name = "PlantIt Queue",
+        version = "1.0.0-SNAPSHOT",
+        description = "Proxy-level queue system for Plant It game servers",
+        authors = {}
+)
+public class PlantItQueue {
+
+    static final MinecraftChannelIdentifier QUEUE_CHANNEL =
+            MinecraftChannelIdentifier.from(MessagingListener.CHANNEL);
+
+    private final ProxyServer server;
+    private final Logger logger;
+    private final Path dataDirectory;
+
+    private QueueManager queueManager;
+
+    @Inject
+    public PlantItQueue(ProxyServer server, Logger logger, @DataDirectory Path dataDirectory) {
+        this.server = server;
+        this.logger = logger;
+        this.dataDirectory = dataDirectory;
+    }
+
+    @Subscribe
+    public void onProxyInitialize(ProxyInitializeEvent event) {
+        QueueConfig config;
+        try {
+            config = QueueConfig.load(dataDirectory);
+        } catch (IOException e) {
+            logger.error("Failed to load config, using defaults", e);
+            config = new QueueConfig();
+        }
+
+        queueManager = new QueueManager(server, config);
+
+        server.getChannelRegistrar().register(QUEUE_CHANNEL);
+
+        server.getEventManager().register(this, new ConnectionListener(queueManager, config));
+        server.getEventManager().register(this, new MessagingListener(queueManager));
+
+        server.getCommandManager().register(
+                server.getCommandManager().metaBuilder("queue")
+                        .aliases("q")
+                        .build(),
+                new QueueCommand(queueManager));
+
+        final QueueConfig finalConfig = config;
+        server.getScheduler()
+                .buildTask(this, queueManager::broadcastPositions)
+                .repeat(finalConfig.getBroadcastInterval(), TimeUnit.SECONDS)
+                .schedule();
+
+        logger.info("PlantIt Queue enabled. Eligible servers: {}", config.getQueueServers());
+    }
+
+    @Subscribe
+    public void onProxyShutdown(ProxyShutdownEvent event) {
+        server.getChannelRegistrar().unregister(QUEUE_CHANNEL);
+        logger.info("PlantIt Queue disabled.");
+    }
+}

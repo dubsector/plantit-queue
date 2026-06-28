@@ -1,0 +1,12 @@
+# Servers where players can enter the queue.
+# These should match server names defined in velocity.toml.
+queue-servers:
+  - lobby
+  - survival
+  - creative
+
+# Game server name as defined in velocity.toml.
+game-server: plantit-1
+
+# How often (in seconds) to broadcast queue position updates to waiting players.
+position-broadcast-interval: 3
