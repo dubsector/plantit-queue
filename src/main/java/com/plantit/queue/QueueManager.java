@@ -476,7 +476,7 @@ public class QueueManager {
                             } else if (parts[0].equals("lastServer")) {
                                 playerLastServer.put(UUID.fromString(parts[1]), props.getProperty(k));
                             }
-                        } catch (NumberFormatException | IllegalArgumentException ignored) { }
+                        } catch (IllegalArgumentException ignored) { }
                     });
             logger.info("Loaded persisted metrics (joins={}, dispatches={}).",
                     totalQueueJoins.get(), totalDispatches.get());
