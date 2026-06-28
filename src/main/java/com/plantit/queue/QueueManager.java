@@ -39,9 +39,9 @@ public class QueueManager {
     private QueueConfig config;
     private final LinkedList<UUID> queue = new LinkedList<>();
     private final Map<UUID, BossBar> bossBars = new HashMap<>();
-
-    // Track previous positions to detect moves — only ping on change
     private final Map<UUID, Integer> lastKnownPosition = new HashMap<>();
+
+    private boolean stopped = false;
 
     public QueueManager(ProxyServer server, QueueConfig config) {
         this.server = server;
@@ -55,6 +55,11 @@ public class QueueManager {
 
     /** Returns true if the player was added. */
     public boolean enqueue(Player player) {
+        if (stopped) {
+            player.sendMessage(PREFIX.append(
+                    Component.text("Plant It is currently unavailable. Check back soon!", NamedTextColor.RED)));
+            return false;
+        }
         if (queue.contains(player.getUniqueId())) {
             player.sendMessage(PREFIX.append(
                     Component.text("You are already in the queue.", NamedTextColor.RED)));
@@ -230,6 +235,37 @@ public class QueueManager {
                 lastKnownPosition.put(uuid, finalPos);
             });
         }
+    }
+
+    // -------------------------------------------------------------------------
+
+    /** Disables the queue and clears all waiting players with a notification. */
+    public void stop() {
+        stopped = true;
+        new LinkedList<>(queue).forEach(uuid -> {
+            BossBar bar = bossBars.remove(uuid);
+            lastKnownPosition.remove(uuid);
+            queue.remove(uuid);
+            server.getPlayer(uuid).ifPresent(p -> {
+                if (bar != null) p.hideBossBar(bar);
+                clearTabList(p);
+                p.sendMessage(Component.empty());
+                p.sendMessage(PREFIX.append(
+                        Component.text("The queue has been closed by an administrator.", NamedTextColor.RED)));
+                p.sendMessage(PREFIX.append(
+                        Component.text("Plant It is currently unavailable. Check back soon!", NamedTextColor.GRAY)));
+                p.sendMessage(Component.empty());
+            });
+        });
+    }
+
+    /** Re-enables the queue so players can join again. */
+    public void start() {
+        stopped = false;
+    }
+
+    public boolean isStopped() {
+        return stopped;
     }
 
     // -------------------------------------------------------------------------

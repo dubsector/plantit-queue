@@ -66,6 +66,38 @@ public class PiqCommand implements SimpleCommand {
                     }
                 });
             }
+            case "stop" -> {
+                if (!invocation.source().hasPermission("plantit.admin")) {
+                    invocation.source().sendMessage(PREFIX.append(
+                            Component.text("You don't have permission to do that.", NamedTextColor.RED)));
+                    return;
+                }
+                if (queueManager.isStopped()) {
+                    invocation.source().sendMessage(PREFIX.append(
+                            Component.text("The queue is already stopped.", NamedTextColor.RED)));
+                    return;
+                }
+                queueManager.stop();
+                invocation.source().sendMessage(PREFIX.append(
+                        Component.text("Queue stopped. Players will see an unavailability message.", NamedTextColor.GOLD)));
+            }
+
+            case "start" -> {
+                if (!invocation.source().hasPermission("plantit.admin")) {
+                    invocation.source().sendMessage(PREFIX.append(
+                            Component.text("You don't have permission to do that.", NamedTextColor.RED)));
+                    return;
+                }
+                if (!queueManager.isStopped()) {
+                    invocation.source().sendMessage(PREFIX.append(
+                            Component.text("The queue is already running.", NamedTextColor.RED)));
+                    return;
+                }
+                queueManager.start();
+                invocation.source().sendMessage(PREFIX.append(
+                        Component.text("Queue started. Players can now join.", NamedTextColor.GREEN)));
+            }
+
             case "reload" -> {
                 if (!invocation.source().hasPermission("plantit.admin")) {
                     invocation.source().sendMessage(PREFIX.append(
@@ -101,6 +133,10 @@ public class PiqCommand implements SimpleCommand {
         invocation.source().sendMessage(Component.text("  /piq pos     ", NamedTextColor.GREEN)
                 .append(Component.text("— Check your position", NamedTextColor.GRAY)));
         if (isAdmin) {
+            invocation.source().sendMessage(Component.text("  /piq stop    ", NamedTextColor.GOLD)
+                    .append(Component.text("— Disable the queue (clears all waiting players)", NamedTextColor.GRAY)));
+            invocation.source().sendMessage(Component.text("  /piq start   ", NamedTextColor.GOLD)
+                    .append(Component.text("— Re-enable the queue", NamedTextColor.GRAY)));
             invocation.source().sendMessage(Component.text("  /piq reload  ", NamedTextColor.GOLD)
                     .append(Component.text("— Reload config from disk", NamedTextColor.GRAY)));
         }
@@ -111,7 +147,7 @@ public class PiqCommand implements SimpleCommand {
     public List<String> suggest(Invocation invocation) {
         if (invocation.arguments().length <= 1) {
             if (invocation.source().hasPermission("plantit.admin")) {
-                return List.of("join", "leave", "pos", "reload");
+                return List.of("join", "leave", "pos", "stop", "start", "reload");
             }
             return List.of("join", "leave", "pos");
         }
