@@ -442,9 +442,15 @@ jobs:
           path: plugin-jar/
 
       - name: Attest build provenance
+        id: attest
         uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
         with:
           subject-path: plugin-jar/plantit-queue-*.jar
+
+      - name: Copy provenance bundle for release
+        run: |
+          JAR=$(ls plugin-jar/plantit-queue-*.jar | head -1)
+          cp "${{ steps.attest.outputs.bundle-path }}" "${JAR}.intoto.jsonl"
 
       - name: Install cosign
         uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
@@ -473,3 +479,4 @@ jobs:
           files: |
             plugin-jar/plantit-queue-*.jar
             plugin-jar/plantit-queue-*.jar.sigstore.json
+            plugin-jar/plantit-queue-*.jar.intoto.jsonl
