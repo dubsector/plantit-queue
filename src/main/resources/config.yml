@@ -13,7 +13,6 @@ queue-servers:
 game-servers:
   - plantit-1
   - plantit-2
-  - plantit-3
 
 # How often (in seconds) to push position updates to queued players.
 position-broadcast-interval: 3
@@ -53,6 +52,3 @@ pterodactyl:
     plantit-2:
       identifier: "def67890"
       always-on: false   # started on demand, stopped when idle
-    plantit-3:
-      identifier: "ghi11111"
-      always-on: false

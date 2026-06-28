@@ -34,7 +34,6 @@ queue-servers:
 game-servers:
   - plantit-1
   - plantit-2
-  - plantit-3
 
 # How often (seconds) to push position updates to queued players
 position-broadcast-interval: 3
