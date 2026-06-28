@@ -108,6 +108,30 @@ public class PiqCommand implements SimpleCommand {
                 invocation.source().sendMessage(PREFIX.append(
                         Component.text("Config reloaded.", NamedTextColor.GREEN)));
             }
+            case "stats" -> {
+                if (!invocation.source().hasPermission("plantit.admin")) {
+                    invocation.source().sendMessage(PREFIX.append(
+                            Component.text("You don't have permission to do that.", NamedTextColor.RED)));
+                    return;
+                }
+                var stats = queueManager.getStats();
+                invocation.source().sendMessage(Component.empty());
+                invocation.source().sendMessage(PREFIX.append(
+                        Component.text("Queue Stats", NamedTextColor.WHITE, TextDecoration.BOLD)));
+                invocation.source().sendMessage(Component.text("  In queue now:   ", NamedTextColor.GRAY)
+                        .append(Component.text(String.valueOf(stats.currentSize()), NamedTextColor.YELLOW)));
+                invocation.source().sendMessage(Component.text("  Total joins:    ", NamedTextColor.GRAY)
+                        .append(Component.text(String.valueOf(stats.totalJoins()), NamedTextColor.YELLOW)));
+                invocation.source().sendMessage(Component.text("  Total dispatches:", NamedTextColor.GRAY)
+                        .append(Component.text(String.valueOf(stats.totalDispatches()), NamedTextColor.YELLOW)));
+                if (!stats.serverCounts().isEmpty()) {
+                    invocation.source().sendMessage(Component.text("  Per server:", NamedTextColor.GRAY));
+                    stats.serverCounts().forEach((server, count) ->
+                            invocation.source().sendMessage(Component.text("    " + server + ": ", NamedTextColor.DARK_GRAY)
+                                    .append(Component.text(String.valueOf(count), NamedTextColor.YELLOW))));
+                }
+                invocation.source().sendMessage(Component.empty());
+            }
             case "front" -> {
                 if (!invocation.source().hasPermission("plantit.admin")) {
                     invocation.source().sendMessage(PREFIX.append(
@@ -190,6 +214,8 @@ public class PiqCommand implements SimpleCommand {
         invocation.source().sendMessage(Component.text("  /piq pos     ", NamedTextColor.GREEN)
                 .append(Component.text("— Check your position", NamedTextColor.GRAY)));
         if (isAdmin) {
+            invocation.source().sendMessage(Component.text("  /piq stats          ", NamedTextColor.GOLD)
+                    .append(Component.text("— Show queue statistics", NamedTextColor.GRAY)));
             invocation.source().sendMessage(Component.text("  /piq stop           ", NamedTextColor.GOLD)
                     .append(Component.text("— Disable the queue (clears all waiting players)", NamedTextColor.GRAY)));
             invocation.source().sendMessage(Component.text("  /piq start          ", NamedTextColor.GOLD)
@@ -211,9 +237,9 @@ public class PiqCommand implements SimpleCommand {
         if (invocation.arguments().length <= 1) {
             if (invocation.source().hasPermission("plantit.admin")) {
                 if (queueManager.isDebugMode()) {
-                    return List.of("join", "leave", "pos", "stop", "start", "reload", "front", "open");
+                    return List.of("join", "leave", "pos", "stats", "stop", "start", "reload", "front", "open");
                 }
-                return List.of("join", "leave", "pos", "stop", "start", "reload", "front");
+                return List.of("join", "leave", "pos", "stats", "stop", "start", "reload", "front");
             }
             return List.of("join", "leave", "pos");
         }

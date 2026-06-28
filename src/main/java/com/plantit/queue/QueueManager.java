@@ -435,6 +435,14 @@ public class QueueManager {
         return proxy.getPlayer(name).orElse(null);
     }
 
+    public record QueueStats(int currentSize, long totalJoins, long totalDispatches,
+                              Map<String, Long> serverCounts) {}
+
+    public QueueStats getStats() {
+        return new QueueStats(queue.size(), totalQueueJoins.get(), totalDispatches.get(),
+                getServerDispatchCounts());
+    }
+
     /**
      * Debug-only: manually simulate a SLOT_OPEN signal from a server.
      * Returns an error message on failure, or null on success.
