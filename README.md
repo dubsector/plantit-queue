@@ -6,6 +6,7 @@
 [![Zizmor](https://github.com/dubsector/plantit-queue/actions/workflows/zizmor.yml/badge.svg)](https://github.com/dubsector/plantit-queue/actions/workflows/zizmor.yml)
 [![Security Policy](https://img.shields.io/badge/Security-Policy-green)](SECURITY.md)
 [![Dependabot](https://img.shields.io/badge/Dependabot-enabled-025E8C?logo=dependabot)](https://github.com/dubsector/plantit-queue/network/updates)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/dubsector/plantit-queue/badge)](https://securityscorecards.dev/viewer/?uri=github.com/dubsector/plantit-queue)
 
 Proxy-level queue system for [Plant It](https://github.com/dubsector/plantit) game servers, running on [Velocity](https://papermc.io/software/velocity).
 
