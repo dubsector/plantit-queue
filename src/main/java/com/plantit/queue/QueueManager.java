@@ -128,15 +128,25 @@ public class QueueManager {
 
             var registered = server.getServer(name);
             if (registered.isPresent()) {
-                player.sendMessage(PREFIX
-                        .append(Component.text("[DEBUG] Bypassing queue — dispatching to ", NamedTextColor.GOLD))
+                broadcastDebug(Component.text("[DEBUG] ", NamedTextColor.GOLD, TextDecoration.BOLD)
+                        .append(Component.text(player.getUsername(), NamedTextColor.YELLOW))
+                        .append(Component.text(" joined queue → dispatching to ", NamedTextColor.GOLD))
                         .append(Component.text(name, NamedTextColor.YELLOW)));
                 dispatchPlayers(1, registered.get());
                 return;
             }
         }
-        player.sendMessage(PREFIX.append(
-                Component.text("[DEBUG] No reachable game server found — staying in queue.", NamedTextColor.RED)));
+        broadcastDebug(Component.text("[DEBUG] ", NamedTextColor.GOLD, TextDecoration.BOLD)
+                .append(Component.text(player.getUsername(), NamedTextColor.YELLOW))
+                .append(Component.text(" joined queue — no reachable game server found.", NamedTextColor.RED)));
+    }
+
+    /** Sends a debug message to all online players with plantit.admin permission. */
+    private void broadcastDebug(Component message) {
+        Component prefixed = PREFIX.append(message);
+        server.getAllPlayers().stream()
+                .filter(p -> p.hasPermission("plantit.admin"))
+                .forEach(p -> p.sendMessage(prefixed));
     }
 
     public void dequeue(UUID uuid) {
@@ -201,6 +211,13 @@ public class QueueManager {
                         Component.text("Found a match! Connecting you to the server...", NamedTextColor.GREEN)));
                 p.sendMessage(Component.empty());
                 p.playSound(SOUND_CONNECT);
+
+                if (config.isDebugMode()) {
+                    broadcastDebug(Component.text("[DEBUG] ", NamedTextColor.GOLD, TextDecoration.BOLD)
+                            .append(Component.text(p.getUsername(), NamedTextColor.YELLOW))
+                            .append(Component.text(" → ", NamedTextColor.GRAY))
+                            .append(Component.text(destination.getServerInfo().getName(), NamedTextColor.GREEN)));
+                }
 
                 p.createConnectionRequest(destination).fireAndForget();
             });
