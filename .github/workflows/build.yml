@@ -394,12 +394,19 @@ jobs:
     permissions:
       contents: write
       actions: read
+      id-token: write
+      attestations: write
     steps:
       - name: Download plugin artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: plugin-jar
           path: plugin-jar/
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@96278af6caaf10aea03fd8d33a09a777ca52d62f # v3.2.0
+        with:
+          subject-path: plugin-jar/plantit-queue-*.jar
 
       - name: Publish release
         env:
