@@ -48,7 +48,7 @@ jobs:
           echo "Plan installed to local Maven cache"
 
       - name: Build with Maven
-        run: mvn clean package -DskipTests -q
+        run: mvn clean package -q
 
       - name: Get version
         id: ver
