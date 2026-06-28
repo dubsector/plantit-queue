@@ -47,8 +47,11 @@ jobs:
           mvn install:install-file -Dfile=Plan.jar -DgroupId=com.djrapitops -DartifactId=plan -Dversion=5.7.3306 -Dpackaging=jar
           echo "Plan installed to local Maven cache"
 
+      - name: Run unit tests
+        run: mvn test -q
+
       - name: Build with Maven
-        run: mvn clean package -q
+        run: mvn clean package -DskipTests -q
 
       - name: Get version
         id: ver
