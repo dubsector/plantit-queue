@@ -3,9 +3,10 @@ name: PlantIt Queue Build
 on:
   push:
     branches: [master]
-    paths-ignore:
-      - '**.md'
-      - 'LICENSE'
+    paths:
+      - 'src/**'
+      - 'pom.xml'
+      - '.github/workflows/build.yml'
   pull_request:
   workflow_dispatch:
 

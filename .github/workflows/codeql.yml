@@ -3,9 +3,10 @@ name: CodeQL
 on:
   push:
     branches: [master]
-    paths-ignore:
-      - '**.md'
-      - 'LICENSE'
+    paths:
+      - 'src/**'
+      - 'pom.xml'
+      - '.github/workflows/codeql.yml'
   pull_request:
   schedule:
     - cron: '0 3 * * 1'  # weekly Monday 03:00 UTC

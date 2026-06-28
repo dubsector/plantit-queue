@@ -3,9 +3,10 @@ name: Dependency Check
 on:
   push:
     branches: [master]
-    paths-ignore:
-      - '**.md'
-      - 'LICENSE'
+    paths:
+      - 'src/**'
+      - 'pom.xml'
+      - '.github/workflows/dependency-check.yml'
   pull_request:
   schedule:
     - cron: '0 4 * * 1'  # weekly Monday 04:00 UTC
