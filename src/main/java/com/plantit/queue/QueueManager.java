@@ -457,20 +457,26 @@ public class QueueManager {
             totalDispatches.set(Long.parseLong(props.getProperty("totalDispatches", "0")));
             props.stringPropertyNames().stream()
                     .filter(k -> k.startsWith("server."))
-                    .forEach(k -> serverDispatchCounts
-                            .computeIfAbsent(k.substring(7), n -> new AtomicLong())
-                            .set(Long.parseLong(props.getProperty(k, "0"))));
+                    .forEach(k -> {
+                        try {
+                            serverDispatchCounts
+                                    .computeIfAbsent(k.substring(7), n -> new AtomicLong())
+                                    .set(Long.parseLong(props.getProperty(k, "0")));
+                        } catch (NumberFormatException ignored) { }
+                    });
             props.stringPropertyNames().stream()
                     .filter(k -> k.startsWith("player."))
                     .forEach(k -> {
-                        String[] parts = k.substring(7).split("\\.", 2);
-                        if (parts[0].equals("joins")) {
-                            playerJoinCounts
-                                    .computeIfAbsent(UUID.fromString(parts[1]), u -> new AtomicLong())
-                                    .set(Long.parseLong(props.getProperty(k, "0")));
-                        } else if (parts[0].equals("lastServer")) {
-                            playerLastServer.put(UUID.fromString(parts[1]), props.getProperty(k));
-                        }
+                        try {
+                            String[] parts = k.substring(7).split("\\.", 2);
+                            if (parts[0].equals("joins")) {
+                                playerJoinCounts
+                                        .computeIfAbsent(UUID.fromString(parts[1]), u -> new AtomicLong())
+                                        .set(Long.parseLong(props.getProperty(k, "0")));
+                            } else if (parts[0].equals("lastServer")) {
+                                playerLastServer.put(UUID.fromString(parts[1]), props.getProperty(k));
+                            }
+                        } catch (NumberFormatException | IllegalArgumentException ignored) { }
                     });
             logger.info("Loaded persisted metrics (joins={}, dispatches={}).",
                     totalQueueJoins.get(), totalDispatches.get());
