@@ -84,6 +84,7 @@ Requires the `plantit.admin` permission.
 | `/piq stop` | Close the queue and clear all waiting players |
 | `/piq start` | Re-open the queue |
 | `/piq reload` | Reload `config.yml` from disk |
+| `/piq open <server> <slots>` | *(debug mode only)* Manually dispatch players to a server |
 
 ## How it works
 
@@ -116,7 +117,15 @@ Set `pterodactyl.enabled: true` and fill in your panel URL, Client API key, and 
 
 ## Debug mode
 
-Enable `debug.enabled: true` in `config.yml` and run `/piq reload`. While active, joining the queue immediately dispatches you to the first reachable game server without waiting for a `SLOT_OPEN` signal. A warning is printed to the console on every startup while this is on.
+Enable `debug.enabled: true` in `config.yml` and run `/piq reload`. A warning is printed to the console on every startup while this is on.
+
+While active, admins gain access to an additional command:
+
+| Command | Description |
+|---|---|
+| `/piq open <server> <slots>` | Manually push queued players to a server, bypassing the `SLOT_OPEN` requirement |
+
+This lets you test queue dispatch without a game server sending signals — useful when the server is online but the game plugin isn't loaded yet.
 
 **Disable before going live.**
 
