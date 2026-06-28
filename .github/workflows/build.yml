@@ -203,13 +203,14 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SHORT_SHA: ${{ needs.build.outputs.short_sha }}
           VERSION: ${{ needs.build.outputs.version }}
+          RUN_NUMBER: ${{ github.run_number }}
         run: |
           printf '> [!WARNING]\n> **Use at your own risk.** This is an automated pre-release build and may be unstable. Not recommended for production use.\n\nBuilt from [%s](https://github.com/${{ github.repository }}/commit/%s)\n\n**Requires:** Velocity 3.5.x · Java 21\n' \
             "$SHORT_SHA" "$GITHUB_SHA" > release-notes.md
 
-          gh release create "build-${SHORT_SHA}" \
+          gh release create "build-${RUN_NUMBER}" \
             --repo ${{ github.repository }} \
-            --title "plantit-queue ${VERSION} (${SHORT_SHA})" \
+            --title "plantit-queue ${VERSION} build ${RUN_NUMBER} (${SHORT_SHA})" \
             --notes-file release-notes.md \
             --prerelease \
             plugin-jar/plantit-queue-*.jar
