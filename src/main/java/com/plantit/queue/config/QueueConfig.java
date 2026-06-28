@@ -11,7 +11,7 @@ import java.util.List;
 
 public class QueueConfig {
 
-    private List<String> queueServers = List.of("lobby");
+    private List<String> queueServers = List.of("First Capital");
     private List<String> gameServers = List.of();
     private int broadcastInterval = 3;
     private int maxPlayersPerServer = 10;

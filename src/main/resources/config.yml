@@ -1,9 +1,7 @@
 # Servers where players can enter the queue.
 # These must match server names defined in velocity.toml.
 queue-servers:
-  - lobby
-  - survival
-  - creative
+  - "First Capital"
 
 # Game servers that are allowed to pull players from the queue.
 # These must match server names defined in velocity.toml.
