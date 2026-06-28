@@ -65,23 +65,14 @@ jobs:
           name: plugin-jar
           path: plugin-jar/
 
-      - name: Resolve latest Velocity build
-        id: velocity
+      - name: Resolve and download Velocity JAR
         run: |
-          VEL_VERSION=$(curl -fsSL "https://api.papermc.io/v2/projects/velocity" | python3 -c "import sys,json; vs=json.load(sys.stdin)['versions']; print(vs[-1])")
-          BUILD=$(curl -fsSL "https://api.papermc.io/v2/projects/velocity/versions/${VEL_VERSION}/builds" | python3 -c "import sys,json; builds=json.load(sys.stdin)['builds']; stable=[b for b in builds if b.get('channel','')=='default']; chosen=(stable or builds)[-1]; print(chosen['build'])")
-          JAR_NAME=$(curl -fsSL "https://api.papermc.io/v2/projects/velocity/versions/${VEL_VERSION}/builds/${BUILD}" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['downloads']['application']['name'])")
-          echo "vel_version=${VEL_VERSION}" >> "$GITHUB_OUTPUT"
-          echo "build=${BUILD}"             >> "$GITHUB_OUTPUT"
-          echo "jar_name=${JAR_NAME}"       >> "$GITHUB_OUTPUT"
+          VEL_VERSION=$(curl -fsSL "https://api.papermc.io/v2/projects/velocity" \
+            | python3 -c "import sys,json; vs=json.load(sys.stdin)['versions']; print(vs[-1])")
+          BUILD=$(curl -fsSL "https://api.papermc.io/v2/projects/velocity/versions/${VEL_VERSION}/builds" \
+            | python3 -c "import sys,json; builds=json.load(sys.stdin)['builds']; stable=[b for b in builds if b.get('channel','')=='default']; chosen=(stable or builds)[-1]; print(chosen['build'])")
+          JAR_NAME="velocity-${VEL_VERSION}-${BUILD}.jar"
           echo "Resolved: Velocity ${VEL_VERSION} build ${BUILD} (${JAR_NAME})"
-
-      - name: Download Velocity JAR
-        env:
-          VEL_VERSION: ${{ steps.velocity.outputs.vel_version }}
-          BUILD: ${{ steps.velocity.outputs.build }}
-          JAR_NAME: ${{ steps.velocity.outputs.jar_name }}
-        run: |
           mkdir -p smoke-proxy/plugins
           curl -fsSL "https://api.papermc.io/v2/projects/velocity/versions/${VEL_VERSION}/builds/${BUILD}/downloads/${JAR_NAME}" \
             -o smoke-proxy/velocity.jar
@@ -98,42 +89,42 @@ jobs:
       - name: Write velocity.toml
         run: |
           cat > smoke-proxy/velocity.toml << 'EOF'
-config-version = "2.7"
-bind = "0.0.0.0:25577"
-motd = "Smoke Test"
-show-max-players = 500
-online-mode = false
-force-key-authentication = false
-player-info-forwarding-mode = "NONE"
-announce-forge = false
-kick-existing-players = false
-ping-passthrough = "DISABLED"
-enable-player-address-logging = false
+          config-version = "2.7"
+          bind = "0.0.0.0:25577"
+          motd = "Smoke Test"
+          show-max-players = 500
+          online-mode = false
+          force-key-authentication = false
+          player-info-forwarding-mode = "NONE"
+          announce-forge = false
+          kick-existing-players = false
+          ping-passthrough = "DISABLED"
+          enable-player-address-logging = false
 
-[servers]
-try = []
+          [servers]
+          try = []
 
-[forced-hosts]
+          [forced-hosts]
 
-[advanced]
-compression-threshold = 256
-compression-level = -1
-login-ratelimit = 3000
-connection-timeout = 5000
-read-timeout = 30000
-haproxy-protocol = false
-tcp-fast-open = false
-bungee-plugin-message-channel = true
-show-ping-requests = false
-failover-on-unexpected-server-disconnect = true
-announce-proxy-commands = true
-log-command-executions = false
-log-player-connections = false
-accepts-transfers = false
+          [advanced]
+          compression-threshold = 256
+          compression-level = -1
+          login-ratelimit = 3000
+          connection-timeout = 5000
+          read-timeout = 30000
+          haproxy-protocol = false
+          tcp-fast-open = false
+          bungee-plugin-message-channel = true
+          show-ping-requests = false
+          failover-on-unexpected-server-disconnect = true
+          announce-proxy-commands = true
+          log-command-executions = false
+          log-player-connections = false
+          accepts-transfers = false
 
-[query]
-enabled = false
-EOF
+          [query]
+          enabled = false
+          EOF
 
       - name: Start Velocity and wait for ready
         run: |
