@@ -12,8 +12,11 @@ import java.util.List;
 public class QueueConfig {
 
     private List<String> queueServers = List.of("lobby");
-    private String gameServer = "plantit-1";
+    private List<String> gameServers = List.of();
     private int broadcastInterval = 3;
+
+    /** No-arg constructor yields safe defaults. */
+    public QueueConfig() { }
 
     public static QueueConfig load(Path dataDirectory) throws IOException {
         Path configFile = dataDirectory.resolve("config.yml");
@@ -32,17 +35,23 @@ public class QueueConfig {
         ConfigurationNode root = loader.load();
         QueueConfig config = new QueueConfig();
         config.queueServers = root.node("queue-servers").getList(String.class, List.of("lobby"));
-        config.gameServer = root.node("game-server").getString("plantit-1");
+        config.gameServers = root.node("game-servers").getList(String.class, List.of());
         config.broadcastInterval = root.node("position-broadcast-interval").getInt(3);
         return config;
+    }
+
+    /** Returns true if {@code serverName} is allowed to dispatch players from the queue. */
+    public boolean isGameServer(String serverName) {
+        // Empty list = allow any server (single-server setups or trusted networks)
+        return gameServers.isEmpty() || gameServers.contains(serverName);
     }
 
     public List<String> getQueueServers() {
         return queueServers;
     }
 
-    public String getGameServer() {
-        return gameServer;
+    public List<String> getGameServers() {
+        return gameServers;
     }
 
     public int getBroadcastInterval() {

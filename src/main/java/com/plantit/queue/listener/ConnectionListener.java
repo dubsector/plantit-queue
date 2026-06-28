@@ -21,13 +21,18 @@ public class ConnectionListener {
         queueManager.dequeue(event.getPlayer().getUniqueId());
     }
 
-    /** Remove players from the queue if they switch to a non-eligible, non-game server. */
+    /**
+     * Dequeue players who manually switch to a non-queue-eligible server.
+     * Players dispatched to a game server are already removed before the connection fires,
+     * so this only catches manual switches (e.g. /server minigames while queued).
+     */
     @Subscribe
     public void onServerSwitch(ServerConnectedEvent event) {
         String destination = event.getServer().getServerInfo().getName();
-        boolean eligible = config.getQueueServers().contains(destination)
-                || destination.equals(config.getGameServer());
-        if (!eligible) {
+        boolean eligibleToQueue = config.getQueueServers().contains(destination);
+        boolean isGameServer = config.isGameServer(destination);
+
+        if (!eligibleToQueue && !isGameServer) {
             queueManager.dequeue(event.getPlayer().getUniqueId());
         }
     }

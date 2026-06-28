@@ -16,7 +16,6 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 public class QueueManager {
@@ -130,10 +129,12 @@ public class QueueManager {
         return queue.size();
     }
 
-    public void dispatchPlayers(int count) {
-        Optional<RegisteredServer> gameServer = server.getServer(config.getGameServer());
-        if (gameServer.isEmpty()) return;
-
+    /**
+     * Dispatches the next {@code count} players in the queue to {@code destination}.
+     * Called by {@link com.plantit.queue.listener.MessagingListener} with the exact
+     * server that sent the SLOT_OPEN signal, so each game server fills independently.
+     */
+    public void dispatchPlayers(int count, RegisteredServer destination) {
         for (int i = 0; i < count && !queue.isEmpty(); i++) {
             UUID uuid = queue.poll();
             BossBar bar = bossBars.remove(uuid);
@@ -157,7 +158,7 @@ public class QueueManager {
                 p.sendMessage(Component.empty());
                 p.playSound(SOUND_CONNECT);
 
-                p.createConnectionRequest(gameServer.get()).fireAndForget();
+                p.createConnectionRequest(destination).fireAndForget();
             });
         }
     }

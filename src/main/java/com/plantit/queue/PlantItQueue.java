@@ -58,7 +58,7 @@ public class PlantItQueue {
         server.getChannelRegistrar().register(QUEUE_CHANNEL);
 
         server.getEventManager().register(this, new ConnectionListener(queueManager, config));
-        server.getEventManager().register(this, new MessagingListener(queueManager));
+        server.getEventManager().register(this, new MessagingListener(queueManager, config, logger));
 
         server.getCommandManager().register(
                 server.getCommandManager().metaBuilder("queue")

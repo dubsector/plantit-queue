@@ -5,8 +5,14 @@ queue-servers:
   - survival
   - creative
 
-# Game server name as defined in velocity.toml.
-game-server: plantit-1
+# Game servers that are allowed to request players from the queue.
+# These should match server names defined in velocity.toml.
+# Add as many as you want — the queue will distribute players to whichever
+# server has an open slot first.
+# Leave empty to allow any backend server to request players (not recommended
+# for production — set explicit names when running multiple servers).
+game-servers:
+  - plantit-1
 
 # How often (in seconds) to broadcast queue position updates to waiting players.
 position-broadcast-interval: 3
