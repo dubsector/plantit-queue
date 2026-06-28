@@ -50,6 +50,11 @@ public class QueueConfig {
         return gameServers.isEmpty() || gameServers.contains(serverName);
     }
 
+    /** Returns true only if {@code serverName} is explicitly listed as a game server. */
+    public boolean isExplicitGameServer(String serverName) {
+        return !gameServers.isEmpty() && gameServers.contains(serverName);
+    }
+
     public List<String> getQueueServers() {
         return queueServers;
     }
