@@ -16,3 +16,32 @@ game-servers:
 
 # How often (in seconds) to broadcast queue position updates to waiting players.
 position-broadcast-interval: 3
+
+# ── Pterodactyl auto-scaler (optional) ───────────────────────────────────────
+# When enabled, the queue will automatically start game servers when demand is
+# high and stop them when idle. Requires pre-created server allocations in your
+# Pterodactyl panel.
+pterodactyl:
+  enabled: false
+  panel-url: "https://panel.example.com"
+  api-key: "ptlc_your_client_api_key_here"
+
+  # Start a new server when the queue exceeds this many players.
+  scale-up-threshold: 8
+
+  # Stop an empty server after it has been idle for this many minutes.
+  # Has no effect on servers marked always-on: true.
+  scale-down-idle-minutes: 5
+
+  # Map each Velocity server name to its Pterodactyl server identifier.
+  # The identifier is the short ID shown in your panel URL (e.g. abc12345).
+  servers:
+    plantit-1:
+      identifier: "abc12345"
+      always-on: true    # kept running at all times
+    plantit-2:
+      identifier: "def67890"
+      always-on: false   # started on demand, stopped when idle
+    plantit-3:
+      identifier: "ghi11111"
+      always-on: false

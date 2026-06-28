@@ -4,6 +4,9 @@ import com.plantit.queue.command.QueueCommand;
 import com.plantit.queue.config.QueueConfig;
 import com.plantit.queue.listener.ConnectionListener;
 import com.plantit.queue.listener.MessagingListener;
+import com.plantit.queue.scaler.PterodactylConfig;
+import com.plantit.queue.scaler.QueueScaler;
+import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
@@ -71,6 +74,22 @@ public class PlantItQueue {
                 .buildTask(this, queueManager::broadcastPositions)
                 .repeat(finalConfig.getBroadcastInterval(), TimeUnit.SECONDS)
                 .schedule();
+
+        // Optional Pterodactyl auto-scaler
+        try {
+            PterodactylConfig pteroConfig = PterodactylConfig.from(
+                    YamlConfigurationLoader.builder()
+                            .path(dataDirectory.resolve("config.yml"))
+                            .build()
+                            .load());
+            if (pteroConfig.isEnabled()) {
+                new QueueScaler(this, server, queueManager, pteroConfig, logger).start();
+                logger.info("Pterodactyl auto-scaler enabled ({} servers configured).",
+                        pteroConfig.getServers().size());
+            }
+        } catch (Exception e) {
+            logger.warn("Pterodactyl scaler not loaded: {}", e.getMessage());
+        }
 
         logger.info("PlantIt Queue enabled. Eligible servers: {}", config.getQueueServers());
     }
