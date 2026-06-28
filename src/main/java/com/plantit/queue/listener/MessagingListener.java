@@ -19,7 +19,7 @@ import java.nio.charset.StandardCharsets;
  */
 public class MessagingListener {
 
-    static final String CHANNEL = "plantit:queue";
+    public static final String CHANNEL = "plantit:queue";
 
     private final QueueManager queueManager;
     private final QueueConfig config;
