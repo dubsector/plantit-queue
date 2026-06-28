@@ -3,6 +3,9 @@ name: PlantIt Queue Build
 on:
   push:
     branches: [master]
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
   pull_request:
   workflow_dispatch:
 
