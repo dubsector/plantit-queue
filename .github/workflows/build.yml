@@ -418,19 +418,30 @@ jobs:
         with:
           subject-path: plugin-jar/plantit-queue-*.jar
 
-      - name: Publish release
+      - name: Install cosign
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+
+      - name: Sign JAR
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COSIGN_EXPERIMENTAL: "1"
+        run: |
+          JAR=$(ls plugin-jar/plantit-queue-*.jar)
+          cosign sign-blob --yes --bundle "${JAR}.sigstore.json" "$JAR"
+
+      - name: Generate release notes
+        env:
           SHORT_SHA: ${{ needs.build.outputs.short_sha }}
-          VERSION: ${{ needs.build.outputs.version }}
-          RUN_NUMBER: ${{ github.run_number }}
         run: |
           printf '> [!WARNING]\n> **Use at your own risk.** This is an automated pre-release build and may be unstable. Not recommended for production use.\n\nBuilt from [%s](https://github.com/${{ github.repository }}/commit/%s)\n\n**Requires:** Velocity 3.5.x · Java 21\n' \
             "$SHORT_SHA" "$GITHUB_SHA" > release-notes.md
 
-          gh release create "build-${RUN_NUMBER}" \
-            --repo ${{ github.repository }} \
-            --title "plantit-queue ${VERSION} build ${RUN_NUMBER} (${SHORT_SHA})" \
-            --notes-file release-notes.md \
-            --prerelease \
+      - name: Publish release
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: "plantit-queue ${{ needs.build.outputs.version }} build ${{ github.run_number }} (${{ needs.build.outputs.short_sha }})"
+          body_path: release-notes.md
+          prerelease: true
+          files: |
             plugin-jar/plantit-queue-*.jar
+            plugin-jar/plantit-queue-*.jar.sigstore.json
