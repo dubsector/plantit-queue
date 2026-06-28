@@ -1,5 +1,6 @@
 package com.plantit.queue;
 
+import com.plantit.queue.command.PiqCommand;
 import com.plantit.queue.command.QueueCommand;
 import com.plantit.queue.config.QueueConfig;
 import com.plantit.queue.listener.ConnectionListener;
@@ -64,10 +65,12 @@ public class PlantItQueue {
         server.getEventManager().register(this, new MessagingListener(queueManager, config, logger));
 
         server.getCommandManager().register(
-                server.getCommandManager().metaBuilder("queue")
-                        .aliases("q")
-                        .build(),
+                server.getCommandManager().metaBuilder("plantit").build(),
                 new QueueCommand(queueManager));
+
+        server.getCommandManager().register(
+                server.getCommandManager().metaBuilder("piq").build(),
+                new PiqCommand(this));
 
         final QueueConfig finalConfig = config;
         server.getScheduler()
@@ -91,7 +94,27 @@ public class PlantItQueue {
             logger.warn("Pterodactyl scaler not loaded: {}", e.getMessage());
         }
 
+        if (config.isDebugMode()) {
+            logger.warn("=================================================");
+            logger.warn("  DEBUG MODE IS ENABLED — disable before going live");
+            logger.warn("=================================================");
+        }
+
         logger.info("PlantIt Queue enabled. Eligible servers: {}", config.getQueueServers());
+    }
+
+    /** Reloads config from disk and hot-swaps it into the queue manager. */
+    public void reload() {
+        try {
+            QueueConfig fresh = QueueConfig.load(dataDirectory);
+            queueManager.updateConfig(fresh);
+            if (fresh.isDebugMode()) {
+                logger.warn("Debug mode is ENABLED after reload.");
+            }
+            logger.info("Config reloaded. Debug mode: {}", fresh.isDebugMode());
+        } catch (IOException e) {
+            logger.error("Failed to reload config: {}", e.getMessage());
+        }
     }
 
     @Subscribe

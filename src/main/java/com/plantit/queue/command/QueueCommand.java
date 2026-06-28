@@ -35,9 +35,7 @@ public class QueueCommand implements SimpleCommand {
 
         switch (sub) {
             case "join" -> queueManager.enqueue(player);
-
             case "leave" -> queueManager.dequeue(player.getUniqueId());
-
             case "pos", "position" -> {
                 int pos = queueManager.getPosition(player.getUniqueId());
                 if (pos == -1) {
@@ -53,7 +51,6 @@ public class QueueCommand implements SimpleCommand {
                             .append(Component.text(queueManager.size() + " in queue", NamedTextColor.GRAY)));
                 }
             }
-
             default -> sendHelp(player);
         }
     }
@@ -62,20 +59,18 @@ public class QueueCommand implements SimpleCommand {
         player.sendMessage(Component.empty());
         player.sendMessage(PREFIX.append(
                 Component.text("Queue Commands", NamedTextColor.WHITE, TextDecoration.BOLD)));
-        player.sendMessage(Component.text("  /queue join    ", NamedTextColor.GREEN)
+        player.sendMessage(Component.text("  /plantit join    ", NamedTextColor.GREEN)
                 .append(Component.text("— Join the queue", NamedTextColor.GRAY)));
-        player.sendMessage(Component.text("  /queue leave   ", NamedTextColor.GREEN)
+        player.sendMessage(Component.text("  /plantit leave   ", NamedTextColor.GREEN)
                 .append(Component.text("— Leave the queue", NamedTextColor.GRAY)));
-        player.sendMessage(Component.text("  /queue pos     ", NamedTextColor.GREEN)
+        player.sendMessage(Component.text("  /plantit pos     ", NamedTextColor.GREEN)
                 .append(Component.text("— Check your position", NamedTextColor.GRAY)));
         player.sendMessage(Component.empty());
     }
 
     @Override
     public List<String> suggest(Invocation invocation) {
-        if (invocation.arguments().length <= 1) {
-            return List.of("join", "leave", "pos");
-        }
+        if (invocation.arguments().length <= 1) return List.of("join", "leave", "pos");
         return List.of();
     }
 }

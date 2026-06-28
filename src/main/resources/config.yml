@@ -17,6 +17,13 @@ game-servers:
 # How often (in seconds) to broadcast queue position updates to waiting players.
 position-broadcast-interval: 3
 
+# ── Debug mode ───────────────────────────────────────────────────────────────
+# When enabled, players are dispatched to the first reachable game server
+# immediately on joining the queue — no SLOT_OPEN signal required.
+# Use for local testing only. Requires /queue reload to take effect.
+debug:
+  enabled: false
+
 # ── Pterodactyl auto-scaler (optional) ───────────────────────────────────────
 # When enabled, the queue will automatically start game servers when demand is
 # high and stop them when idle. Requires pre-created server allocations in your

@@ -36,7 +36,7 @@ public class QueueManager {
             Key.key("minecraft:block.note_block.pling"), Sound.Source.MASTER, 0.6f, 1.5f);
 
     private final ProxyServer server;
-    private final QueueConfig config;
+    private QueueConfig config;
     private final LinkedList<UUID> queue = new LinkedList<>();
     private final Map<UUID, BossBar> bossBars = new HashMap<>();
 
@@ -45,6 +45,11 @@ public class QueueManager {
 
     public QueueManager(ProxyServer server, QueueConfig config) {
         this.server = server;
+        this.config = config;
+    }
+
+    /** Hot-swaps the config after a /queue reload. */
+    public void updateConfig(QueueConfig config) {
         this.config = config;
     }
 
@@ -92,7 +97,34 @@ public class QueueManager {
         player.playSound(SOUND_JOIN);
         updateTabList(player, pos, queue.size());
         lastKnownPosition.put(player.getUniqueId(), pos);
+
+        if (config.isDebugMode()) {
+            debugDispatch(player);
+        }
+
         return true;
+    }
+
+    /**
+     * Debug-mode fast path: immediately dispatch this player to the first reachable
+     * game server without waiting for a SLOT_OPEN signal.
+     */
+    private void debugDispatch(Player player) {
+        for (String name : config.getGameServers().isEmpty()
+                ? server.getAllServers().stream().map(s -> s.getServerInfo().getName()).toList()
+                : config.getGameServers()) {
+
+            var registered = server.getServer(name);
+            if (registered.isPresent()) {
+                player.sendMessage(PREFIX
+                        .append(Component.text("[DEBUG] Bypassing queue — dispatching to ", NamedTextColor.GOLD))
+                        .append(Component.text(name, NamedTextColor.YELLOW)));
+                dispatchPlayers(1, registered.get());
+                return;
+            }
+        }
+        player.sendMessage(PREFIX.append(
+                Component.text("[DEBUG] No reachable game server found — staying in queue.", NamedTextColor.RED)));
     }
 
     public void dequeue(UUID uuid) {
