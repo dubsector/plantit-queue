@@ -50,7 +50,7 @@ public class PlantItQueue {
     }
 
     @Subscribe
-    public void onProxyInitialize(ProxyInitializeEvent event) {
+    public void onProxyInitialize(ProxyInitializeEvent ignored) {
         QueueConfig config;
         try {
             config = QueueConfig.load(dataDirectory);
@@ -139,7 +139,7 @@ public class PlantItQueue {
     }
 
     @Subscribe
-    public void onProxyShutdown(ProxyShutdownEvent event) {
+    public void onProxyShutdown(ProxyShutdownEvent ignored) {
         server.getChannelRegistrar().unregister(QUEUE_CHANNEL);
         logger.info("PlantIt Queue disabled.");
     }

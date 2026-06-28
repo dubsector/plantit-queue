@@ -495,7 +495,7 @@ public class QueueManager {
                 .append(Component.text("/piq leave", NamedTextColor.GREEN))
                 .append(Component.text(" to leave  \n", NamedTextColor.GRAY));
 
-        player.getTabList().setHeaderAndFooter(header, footer);
+        player.sendPlayerListHeaderAndFooter(header, footer);
     }
 
     private void clearTabList(Player player) {
