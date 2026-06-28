@@ -49,7 +49,7 @@ public class PlantItExtension implements DataExtension {
         return queueManager.getPlayerQueueJoins(playerUUID);
     }
 
-    @StringProvider(text = "Last Server Dispatched To", iconName = "server", priority = 40)
+    @StringProvider(text = "Last Server", iconName = "server", priority = 40)
     public String lastServer(UUID playerUUID) {
         String server = queueManager.getPlayerLastServer(playerUUID);
         return server != null ? server : "Never dispatched";

@@ -61,6 +61,7 @@ public class PlantItQueue {
         }
 
         queueManager = new QueueManager(server, config, logger);
+        queueManager.loadMetrics(dataDirectory.resolve("metrics.properties"));
 
         server.getChannelRegistrar().register(QUEUE_CHANNEL);
 
@@ -142,6 +143,7 @@ public class PlantItQueue {
     @Subscribe
     @SuppressWarnings("unused")
     public void onProxyShutdown(ProxyShutdownEvent ignored) {
+        queueManager.saveMetrics(dataDirectory.resolve("metrics.properties"));
         server.getChannelRegistrar().unregister(QUEUE_CHANNEL);
         logger.info("PlantIt Queue disabled.");
     }

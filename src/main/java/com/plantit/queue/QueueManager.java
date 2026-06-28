@@ -16,6 +16,11 @@ import net.kyori.adventure.title.Title;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.slf4j.Logger;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,6 +28,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -140,10 +146,6 @@ public class QueueManager {
         player.playSound(SOUND_JOIN);
         updateTabList(player, pos, queue.size(), null);
         lastKnownPosition.put(player.getUniqueId(), pos);
-
-        if (config.isDebugMode()) {
-            debugDispatch(player);
-        }
 
         return true;
     }
@@ -417,6 +419,57 @@ public class QueueManager {
         int dispatched = Math.min(slots, queue.size());
         dispatchPlayers(dispatched, server.get());
         return null;
+    }
+
+    public void loadMetrics(Path file) {
+        if (!Files.exists(file)) return;
+        Properties props = new Properties();
+        try (InputStream in = Files.newInputStream(file)) {
+            props.load(in);
+            totalQueueJoins.set(Long.parseLong(props.getProperty("totalQueueJoins", "0")));
+            totalDispatches.set(Long.parseLong(props.getProperty("totalDispatches", "0")));
+            props.stringPropertyNames().stream()
+                    .filter(k -> k.startsWith("server."))
+                    .forEach(k -> serverDispatchCounts
+                            .computeIfAbsent(k.substring(7), n -> new AtomicLong())
+                            .set(Long.parseLong(props.getProperty(k, "0"))));
+            props.stringPropertyNames().stream()
+                    .filter(k -> k.startsWith("player."))
+                    .forEach(k -> {
+                        String[] parts = k.substring(7).split("\\.", 2);
+                        if (parts[0].equals("joins")) {
+                            playerJoinCounts
+                                    .computeIfAbsent(UUID.fromString(parts[1]), u -> new AtomicLong())
+                                    .set(Long.parseLong(props.getProperty(k, "0")));
+                        } else if (parts[0].equals("lastServer")) {
+                            playerLastServer.put(UUID.fromString(parts[1]), props.getProperty(k));
+                        }
+                    });
+            logger.info("Loaded persisted metrics (joins={}, dispatches={}).",
+                    totalQueueJoins.get(), totalDispatches.get());
+        } catch (IOException | IllegalArgumentException e) {
+            logger.warn("Could not load metrics: {}", e.getMessage());
+        }
+    }
+
+    public void saveMetrics(Path file) {
+        Properties props = new Properties();
+        props.setProperty("totalQueueJoins", String.valueOf(totalQueueJoins.get()));
+        props.setProperty("totalDispatches", String.valueOf(totalDispatches.get()));
+        serverDispatchCounts.forEach((name, count) ->
+                props.setProperty("server." + name, String.valueOf(count.get())));
+        playerJoinCounts.forEach((uuid, count) ->
+                props.setProperty("player.joins." + uuid, String.valueOf(count.get())));
+        playerLastServer.forEach((uuid, server) ->
+                props.setProperty("player.lastServer." + uuid, server));
+        try {
+            Files.createDirectories(file.getParent());
+            try (OutputStream out = Files.newOutputStream(file)) {
+                props.store(out, "PlantIt Queue metrics — do not edit manually");
+            }
+        } catch (IOException e) {
+            logger.warn("Could not save metrics: {}", e.getMessage());
+        }
     }
 
     // Plan metrics accessors
