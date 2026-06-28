@@ -97,7 +97,6 @@ public class PlantItQueue {
         // Optional Plan integration — registers queue metrics in the Plan web UI
         try {
             PlanHook.register(queueManager);
-            logger.info("Hooked into Plan — queue metrics available in the web UI.");
         } catch (NoClassDefFoundError ignored) {
             // Plan not installed
         } catch (Exception e) {
