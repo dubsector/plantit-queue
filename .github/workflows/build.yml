@@ -259,8 +259,10 @@ jobs:
 
       - name: Write Plan config
         run: |
-          mkdir -p smoke-proxy/plugins/Plan
-          cat > smoke-proxy/plugins/Plan/config.yml << 'EOF'
+          mkdir -p smoke-proxy/plugins/plan
+          python3 - << 'PYEOF'
+          import textwrap, pathlib
+          cfg = textwrap.dedent("""\
           Server:
               ServerName: "Smoke Test"
           Webserver:
@@ -278,7 +280,10 @@ jobs:
                   Database: plan
                   Launch_options: "?rewriteBatchedStatements=true&useSSL=false&serverTimezone=UTC"
                   Max_connections: 8
-          EOF
+          """)
+          pathlib.Path("smoke-proxy/plugins/plan/config.yml").write_text(cfg)
+          print("Plan config written")
+          PYEOF
 
       - name: Write velocity.toml
         run: |
