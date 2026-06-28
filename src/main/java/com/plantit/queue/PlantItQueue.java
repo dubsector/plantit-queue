@@ -94,14 +94,8 @@ public class PlantItQueue {
             logger.warn("Pterodactyl scaler not loaded: {}", e.getMessage());
         }
 
-        // Optional Plan integration — registers queue metrics in the Plan web UI
-        try {
-            PlanHook.register(queueManager);
-        } catch (NoClassDefFoundError ignored) {
-            // Plan not installed
-        } catch (Exception e) {
-            logger.warn("Plan hook failed to register: {}", e.getMessage());
-        }
+        // Optional Plan integration — deferred so Plan's async DB init can finish first
+        hookPlan(4);
 
         if (config.isDebugMode()) {
             logger.warn("=================================================");
@@ -110,6 +104,24 @@ public class PlantItQueue {
         }
 
         logger.info("PlantIt Queue enabled. Eligible servers: {}", config.getQueueServers());
+    }
+
+    private void hookPlan(int attemptsLeft) {
+        try {
+            PlanHook.register(queueManager);
+            logger.info("Hooked into Plan — queue metrics available in the web UI.");
+        } catch (NoClassDefFoundError ignored) {
+            // Plan not installed
+        } catch (Exception e) {
+            if (attemptsLeft > 0) {
+                server.getScheduler()
+                        .buildTask(this, () -> hookPlan(attemptsLeft - 1))
+                        .delay(3, TimeUnit.SECONDS)
+                        .schedule();
+            } else {
+                logger.warn("Plan hook failed to register: {}", e.getMessage());
+            }
+        }
     }
 
     /** Reloads config from disk and hot-swaps it into the queue manager. */
