@@ -133,7 +133,7 @@ public class PlantItQueue {
             if (fresh.isDebugMode()) {
                 logger.warn("Debug mode is ENABLED after reload.");
             }
-            logger.info("Config reloaded. Debug mode: {}", fresh.isDebugMode());
+            logger.info("Config reloaded. Eligible servers: {}. Debug mode: {}", fresh.getQueueServers(), fresh.isDebugMode());
         } catch (IOException e) {
             logger.error("Failed to reload config: {}", e.getMessage());
         }
