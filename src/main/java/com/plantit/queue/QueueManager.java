@@ -593,7 +593,7 @@ public class QueueManager {
     }
 
     private void clearTabList(Player player) {
-        player.getTabList().setHeaderAndFooter(Component.empty(), Component.empty());
+        player.sendPlayerListHeaderAndFooter(Component.empty(), Component.empty());
     }
 
     private static float barProgress(int pos, int total) {

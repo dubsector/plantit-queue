@@ -3,7 +3,6 @@ package com.plantit.queue;
 import com.plantit.queue.config.QueueConfig;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
-import com.velocitypowered.api.proxy.player.TabList;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.proxy.server.ServerInfo;
 import net.kyori.adventure.bossbar.BossBar;
@@ -58,9 +57,6 @@ class QueueManagerTest {
         lenient().doNothing().when(player).sendActionBar(any(Component.class));
         lenient().doNothing().when(player).playSound(any());
         lenient().doNothing().when(player).sendPlayerListHeaderAndFooter(any(), any());
-        var tabList = mock(TabList.class);
-        lenient().when(player.getTabList()).thenReturn(tabList);
-        lenient().doNothing().when(tabList).setHeaderAndFooter(any(), any());
         // Eligible server stub — default config has "First Capital" as queue server
         var serverInfo = new ServerInfo("First Capital", new InetSocketAddress("localhost", 25565));
         var connectedServer = mock(com.velocitypowered.api.proxy.ServerConnection.class);
