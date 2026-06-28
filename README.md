@@ -4,6 +4,7 @@
 [![CodeQL](https://github.com/dubsector/plantit-queue/actions/workflows/codeql.yml/badge.svg)](https://github.com/dubsector/plantit-queue/actions/workflows/codeql.yml)
 [![Dependency Check](https://github.com/dubsector/plantit-queue/actions/workflows/dependency-check.yml/badge.svg)](https://github.com/dubsector/plantit-queue/actions/workflows/dependency-check.yml)
 [![Zizmor](https://github.com/dubsector/plantit-queue/actions/workflows/zizmor.yml/badge.svg)](https://github.com/dubsector/plantit-queue/actions/workflows/zizmor.yml)
+[![Security Policy](https://img.shields.io/badge/Security-Policy-green)](SECURITY.md)
 
 Proxy-level queue system for [Plant It](https://github.com/dubsector/plantit) game servers, running on [Velocity](https://papermc.io/software/velocity).
 
@@ -147,6 +148,16 @@ mvn clean package -DskipTests
 ```
 
 Requires Java 21 and Maven 3.8+.
+
+## Security
+
+Release JARs are built by CI and signed with [build provenance attestations](https://docs.github.com/en/actions/security-guides/using-artifact-attestations-to-establish-provenance-for-builds). Verify a downloaded JAR with:
+
+```bash
+gh attestation verify plantit-queue-*.jar --repo dubsector/plantit-queue
+```
+
+To report a vulnerability, see [SECURITY.md](SECURITY.md). Please use [GitHub private advisories](https://github.com/dubsector/plantit-queue/security/advisories/new) rather than opening a public issue.
 
 ## License
 
