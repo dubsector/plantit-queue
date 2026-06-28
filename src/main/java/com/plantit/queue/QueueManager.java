@@ -150,6 +150,46 @@ public class QueueManager {
         return true;
     }
 
+    /**
+     * Admin-only: places a player at the front of the queue, bypassing eligibility checks.
+     * If the player is already queued, they are moved to position #1.
+     */
+    public void enqueueFirst(Player player) {
+        boolean alreadyQueued = queue.remove(player.getUniqueId());
+        queue.addFirst(player.getUniqueId());
+
+        if (!alreadyQueued) {
+            totalQueueJoins.incrementAndGet();
+            playerJoinCounts.computeIfAbsent(player.getUniqueId(), k -> new AtomicLong()).incrementAndGet();
+        }
+
+        BossBar existing = bossBars.get(player.getUniqueId());
+        if (existing == null) {
+            BossBar bar = buildBossBar(1, queue.size());
+            bossBars.put(player.getUniqueId(), bar);
+            player.showBossBar(bar);
+        }
+
+        player.showTitle(Title.title(
+                Component.text("Priority", NamedTextColor.GOLD, TextDecoration.BOLD),
+                Component.text("You've been moved to #1 in the queue!", NamedTextColor.GRAY),
+                Title.Times.times(Duration.ofMillis(200), Duration.ofMillis(2500), Duration.ofMillis(500))));
+
+        player.sendMessage(Component.empty());
+        player.sendMessage(PREFIX
+                .append(Component.text("An admin placed you at the front of the queue.", NamedTextColor.YELLOW)));
+        player.sendMessage(PREFIX
+                .append(Component.text("Position: ", NamedTextColor.GRAY))
+                .append(Component.text("#1", NamedTextColor.YELLOW))
+                .append(Component.text("  |  ", NamedTextColor.DARK_GRAY))
+                .append(buildServerStatus()));
+        player.sendMessage(Component.empty());
+
+        player.playSound(SOUND_MOVE_UP);
+        updateTabList(player, 1, queue.size(), null);
+        lastKnownPosition.put(player.getUniqueId(), 1);
+    }
+
     public void dequeue(UUID uuid) {
         boolean removed = queue.remove(uuid);
         BossBar bar = bossBars.remove(uuid);
@@ -389,6 +429,10 @@ public class QueueManager {
 
     public boolean isDebugMode() {
         return config.isDebugMode();
+    }
+
+    public Player findPlayer(String name) {
+        return proxy.getPlayer(name).orElse(null);
     }
 
     /**

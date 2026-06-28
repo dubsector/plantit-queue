@@ -108,6 +108,28 @@ public class PiqCommand implements SimpleCommand {
                 invocation.source().sendMessage(PREFIX.append(
                         Component.text("Config reloaded.", NamedTextColor.GREEN)));
             }
+            case "front" -> {
+                if (!invocation.source().hasPermission("plantit.admin")) {
+                    invocation.source().sendMessage(PREFIX.append(
+                            Component.text("You don't have permission to do that.", NamedTextColor.RED)));
+                    return;
+                }
+                if (args.length < 2) {
+                    invocation.source().sendMessage(PREFIX.append(
+                            Component.text("Usage: /piq front <player>", NamedTextColor.RED)));
+                    return;
+                }
+                var targetPlayer = queueManager.findPlayer(args[1]);
+                if (targetPlayer == null) {
+                    invocation.source().sendMessage(PREFIX.append(
+                            Component.text("Player '" + args[1] + "' is not online.", NamedTextColor.RED)));
+                    return;
+                }
+                queueManager.enqueueFirst(targetPlayer);
+                invocation.source().sendMessage(PREFIX
+                        .append(Component.text(targetPlayer.getUsername(), NamedTextColor.YELLOW))
+                        .append(Component.text(" moved to the front of the queue.", NamedTextColor.GREEN)));
+            }
             case "open" -> {
                 if (!invocation.source().hasPermission("plantit.admin")) {
                     invocation.source().sendMessage(PREFIX.append(
@@ -168,12 +190,14 @@ public class PiqCommand implements SimpleCommand {
         invocation.source().sendMessage(Component.text("  /piq pos     ", NamedTextColor.GREEN)
                 .append(Component.text("— Check your position", NamedTextColor.GRAY)));
         if (isAdmin) {
-            invocation.source().sendMessage(Component.text("  /piq stop    ", NamedTextColor.GOLD)
+            invocation.source().sendMessage(Component.text("  /piq stop           ", NamedTextColor.GOLD)
                     .append(Component.text("— Disable the queue (clears all waiting players)", NamedTextColor.GRAY)));
-            invocation.source().sendMessage(Component.text("  /piq start   ", NamedTextColor.GOLD)
+            invocation.source().sendMessage(Component.text("  /piq start          ", NamedTextColor.GOLD)
                     .append(Component.text("— Re-enable the queue", NamedTextColor.GRAY)));
-            invocation.source().sendMessage(Component.text("  /piq reload  ", NamedTextColor.GOLD)
+            invocation.source().sendMessage(Component.text("  /piq reload         ", NamedTextColor.GOLD)
                     .append(Component.text("— Reload config from disk", NamedTextColor.GRAY)));
+            invocation.source().sendMessage(Component.text("  /piq front <player> ", NamedTextColor.GOLD)
+                    .append(Component.text("— Move a player to position #1", NamedTextColor.GRAY)));
             if (queueManager.isDebugMode()) {
                 invocation.source().sendMessage(Component.text("  /piq open <server> <slots>  ", NamedTextColor.GOLD)
                         .append(Component.text("— [DEBUG] Simulate SLOT_OPEN from a server", NamedTextColor.GRAY)));
@@ -187,9 +211,9 @@ public class PiqCommand implements SimpleCommand {
         if (invocation.arguments().length <= 1) {
             if (invocation.source().hasPermission("plantit.admin")) {
                 if (queueManager.isDebugMode()) {
-                    return List.of("join", "leave", "pos", "stop", "start", "reload", "open");
+                    return List.of("join", "leave", "pos", "stop", "start", "reload", "front", "open");
                 }
-                return List.of("join", "leave", "pos", "stop", "start", "reload");
+                return List.of("join", "leave", "pos", "stop", "start", "reload", "front");
             }
             return List.of("join", "leave", "pos");
         }
