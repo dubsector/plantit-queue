@@ -27,9 +27,9 @@ Players on any configured server (lobby, survival, creative, etc.) can queue for
 ```yaml
 # Servers players can queue from (must match velocity.toml server names)
 queue-servers:
-  - lobby
-  - survival
-  - creative
+  - Lobby
+  - Survival
+  - Creative
 
 # Game servers allowed to pull players from the queue.
 # Empty list = accept slot signals from any backend server.
