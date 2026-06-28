@@ -14,6 +14,7 @@ public class QueueConfig {
     private List<String> queueServers = List.of("lobby");
     private List<String> gameServers = List.of();
     private int broadcastInterval = 3;
+    private int maxPlayersPerServer = 10;
     private boolean debugMode = false;
 
     /** No-arg constructor yields safe defaults. */
@@ -38,6 +39,7 @@ public class QueueConfig {
         config.queueServers = root.node("queue-servers").getList(String.class, List.of("lobby"));
         config.gameServers = root.node("game-servers").getList(String.class, List.of());
         config.broadcastInterval = root.node("position-broadcast-interval").getInt(3);
+        config.maxPlayersPerServer = root.node("max-players-per-server").getInt(10);
         config.debugMode = root.node("debug", "enabled").getBoolean(false);
         return config;
     }
@@ -58,6 +60,10 @@ public class QueueConfig {
 
     public int getBroadcastInterval() {
         return broadcastInterval;
+    }
+
+    public int getMaxPlayersPerServer() {
+        return maxPlayersPerServer;
     }
 
     public boolean isDebugMode() {

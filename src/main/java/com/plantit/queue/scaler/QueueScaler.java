@@ -75,9 +75,19 @@ public class QueueScaler {
         logger.info("Queue started — scaler exiting drain mode.");
     }
 
+    /**
+     * Called by QueueManager when players have no server assigned (all servers at capacity).
+     * Triggers an immediate scale-up check so a new server starts as fast as possible.
+     */
+    public void notifyUnassignedPlayers(int unassignedCount) {
+        if (drainMode.get()) return;
+        logger.info("{} player(s) unassigned — triggering scale-up check.", unassignedCount);
+        proxy.getScheduler().buildTask(plugin, this::scaleTick).schedule();
+    }
+
     private void scaleTick() {
-        int queueSize = queueManager.size();
         boolean draining = drainMode.get();
+        int unassigned = queueManager.getUnassignedCount();
 
         for (PterodactylConfig.ServerEntry entry : pteroConfig.getServers()) {
             String velocityName = entry.velocityName();
@@ -87,18 +97,16 @@ public class QueueScaler {
 
             if (hasPlayers) {
                 idleSince.remove(velocityName);
-                return;
+                continue;
             }
 
             // Empty server path
             if (!entry.alwaysOn()) {
                 if (draining) {
-                    // Queue is stopped — shut down empty servers immediately
                     logger.info("Drain mode: stopping empty server '{}'.", velocityName);
                     stopServer(entry);
                     idleSince.remove(velocityName);
                 } else {
-                    // Normal idle timer
                     Instant idle = idleSince.computeIfAbsent(velocityName, k -> Instant.now());
                     long idleMinutes = (Instant.now().toEpochMilli() - idle.toEpochMilli()) / 60_000;
                     if (idleMinutes >= pteroConfig.getScaleDownIdleMinutes()) {
@@ -108,8 +116,8 @@ public class QueueScaler {
                 }
             }
 
-            // Scale up only when queue is running and has demand
-            if (!draining && queueSize >= pteroConfig.getScaleUpThreshold()) {
+            // Scale up when there are players with no server to go to
+            if (!draining && unassigned > 0) {
                 tryScaleUp(entry);
             }
         }
@@ -120,8 +128,8 @@ public class QueueScaler {
             try {
                 String state = client.getPowerState(entry.identifier());
                 if (state.equals("offline")) {
-                    logger.info("Queue length {} >= threshold {} — starting '{}'.",
-                            queueManager.size(), pteroConfig.getScaleUpThreshold(), entry.velocityName());
+                    logger.info("{} unassigned player(s) — starting '{}'.",
+                            queueManager.getUnassignedCount(), entry.velocityName());
                     startServer(entry);
                 }
             } catch (Exception e) {
