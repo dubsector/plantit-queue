@@ -50,6 +50,7 @@ public class PlantItQueue {
     }
 
     @Subscribe
+    @SuppressWarnings("unused")
     public void onProxyInitialize(ProxyInitializeEvent ignored) {
         QueueConfig config;
         try {
@@ -139,6 +140,7 @@ public class PlantItQueue {
     }
 
     @Subscribe
+    @SuppressWarnings("unused")
     public void onProxyShutdown(ProxyShutdownEvent ignored) {
         server.getChannelRegistrar().unregister(QUEUE_CHANNEL);
         logger.info("PlantIt Queue disabled.");
