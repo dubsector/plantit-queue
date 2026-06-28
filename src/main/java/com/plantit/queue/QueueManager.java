@@ -74,8 +74,7 @@ public class QueueManager {
 
     private boolean stopped = false;
     private QueueScaler scaler = null;
-    /** Runtime override: null = defer to config, true/false = admin-forced. */
-    private Boolean voteEnabledOverride = null;
+    private boolean voteEnabledOverride = true; // mirrors config; updated by setVoteEnabled()
 
     // Metrics — persisted in memory for Plan integration
     private final AtomicLong totalQueueJoins = new AtomicLong(0);
@@ -88,10 +87,12 @@ public class QueueManager {
         this.proxy = proxy;
         this.config = config;
         this.logger = logger;
+        this.voteEnabledOverride = config.isVoteEnabled();
     }
 
     public void updateConfig(QueueConfig config) {
         this.config = config;
+        this.voteEnabledOverride = config.isVoteEnabled();
         tryAssignUnassigned();
     }
 
@@ -104,7 +105,7 @@ public class QueueManager {
     }
 
     public boolean isVoteEnabled() {
-        return voteEnabledOverride != null ? voteEnabledOverride : config.isVoteEnabled();
+        return voteEnabledOverride;
     }
 
     public void setScaler(QueueScaler scaler) {
