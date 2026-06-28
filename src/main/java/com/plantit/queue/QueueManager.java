@@ -112,11 +112,6 @@ public class QueueManager {
         playerJoinCounts.computeIfAbsent(player.getUniqueId(), k -> new AtomicLong()).incrementAndGet();
         int pos = queue.size();
 
-        String target = pickServer();
-        if (target != null) {
-            assign(player.getUniqueId(), target);
-        }
-
         BossBar bar = buildBossBar(pos, pos);
         bossBars.put(player.getUniqueId(), bar);
         player.showBossBar(bar);
@@ -135,7 +130,7 @@ public class QueueManager {
                 .append(Component.text("Position: ", NamedTextColor.GRAY))
                 .append(Component.text("#" + pos, NamedTextColor.YELLOW))
                 .append(Component.text("  |  ", NamedTextColor.DARK_GRAY))
-                .append(serverTag(target)));
+                .append(Component.text("Waiting for a server...", NamedTextColor.GRAY)));
         player.sendMessage(PREFIX
                 .append(Component.text("Use ", NamedTextColor.DARK_GRAY))
                 .append(Component.text("/piq leave", NamedTextColor.GREEN))
@@ -143,7 +138,7 @@ public class QueueManager {
         player.sendMessage(Component.empty());
 
         player.playSound(SOUND_JOIN);
-        updateTabList(player, pos, queue.size(), target);
+        updateTabList(player, pos, queue.size(), null);
         lastKnownPosition.put(player.getUniqueId(), pos);
 
         if (config.isDebugMode()) {
@@ -180,20 +175,11 @@ public class QueueManager {
      */
     public void dispatchPlayers(int count, RegisteredServer destination) {
         String serverName = destination.getServerInfo().getName();
-        LinkedList<UUID> serverQueue = serverQueues.computeIfAbsent(serverName, k -> new LinkedList<>());
 
         for (int i = 0; i < count; i++) {
-            UUID uuid;
-            if (!serverQueue.isEmpty()) {
-                uuid = serverQueue.peek(); // confirmed assigned to this server
-            } else {
-                // Take the first unassigned player in queue order
-                uuid = queue.stream().filter(id -> !assignment.containsKey(id)).findFirst().orElse(null);
-                if (uuid == null) break;
-            }
+            UUID uuid = queue.peek();
+            if (uuid == null) break;
 
-            // Remove from all tracking structures
-            serverQueue.remove(uuid);
             queue.remove(uuid);
             assignment.remove(uuid);
             BossBar bar = bossBars.remove(uuid);
@@ -229,8 +215,10 @@ public class QueueManager {
             });
         }
 
-        // Slots freed up — assign any waiting unassigned players
-        tryAssignUnassigned();
+        // Notify scaler — players remain unassigned until a server signals SLOT_OPEN
+        if (scaler != null && getUnassignedCount() > 0) {
+            scaler.notifyUnassignedPlayers(getUnassignedCount());
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -268,23 +256,8 @@ public class QueueManager {
         return bestFilling != null ? bestFilling : bestEmpty;
     }
 
-    /** Tries to assign all currently unassigned queued players to a server. */
+    /** Notifies the scaler if there are players waiting with no server available. */
     public void tryAssignUnassigned() {
-        for (UUID uuid : queue) {
-            if (assignment.containsKey(uuid)) continue;
-            String target = pickServer();
-            if (target == null) break; // all servers full — need to scale up
-            assign(uuid, target);
-            proxy.getPlayer(uuid).ifPresent(p -> {
-                p.sendMessage(PREFIX
-                        .append(Component.text("Assigned to server ", NamedTextColor.GRAY))
-                        .append(Component.text(target, NamedTextColor.GREEN)));
-                int pos = getPosition(uuid);
-                updateTabList(p, pos, queue.size(), target);
-            });
-        }
-
-        // Notify scaler if there are still unassigned players
         if (scaler != null && getUnassignedCount() > 0) {
             scaler.notifyUnassignedPlayers(getUnassignedCount());
         }
@@ -342,7 +315,6 @@ public class QueueManager {
 
         for (UUID uuid : new LinkedList<>(queue)) {
             final int finalPos = pos++;
-            final String assignedServer = assignment.get(uuid);
             proxy.getPlayer(uuid).ifPresent(p -> {
                 BossBar bar = bossBars.get(uuid);
                 if (bar != null) {
@@ -356,12 +328,12 @@ public class QueueManager {
                         .append(Component.text("  |  ", NamedTextColor.DARK_GRAY))
                         .append(Component.text(total + " in queue", NamedTextColor.GRAY))
                         .append(Component.text("  |  ", NamedTextColor.DARK_GRAY))
-                        .append(serverTag(assignedServer))
+                        .append(Component.text("Waiting for a server...", NamedTextColor.GRAY))
                         .append(Component.text("  |  ", NamedTextColor.DARK_GRAY))
                         .append(Component.text("/piq leave", NamedTextColor.GREEN));
                 p.sendActionBar(actionBar);
 
-                updateTabList(p, finalPos, total, assignedServer);
+                updateTabList(p, finalPos, total, null);
 
                 Integer prev = lastKnownPosition.get(uuid);
                 if (prev != null && finalPos < prev) p.playSound(SOUND_MOVE_UP);
