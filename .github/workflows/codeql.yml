@@ -35,6 +35,20 @@ jobs:
           languages: java
           queries: security-and-quality
 
+      - name: Install Plan dependency
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PLAN_URL=$(curl -fsSL \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            "https://api.github.com/repos/plan-player-analytics/Plan/releases/latest" \
+            | python3 -c "import sys,json; assets=json.load(sys.stdin)['assets']; jar=next(a for a in assets if a['name'].startswith('Plan-') and a['name'].endswith('.jar')); print(jar['browser_download_url'])")
+          echo "Downloading: $PLAN_URL"
+          curl -fsSL "$PLAN_URL" -o Plan.jar
+          ls -lh Plan.jar
+          mvn install:install-file -Dfile=Plan.jar -DgroupId=com.djrapitops -DartifactId=plan -Dversion=5.7.3306 -Dpackaging=jar
+          echo "Plan installed to local Maven cache"
+
       - name: Build
         run: mvn clean package -DskipTests -q
 
