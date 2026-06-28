@@ -1,44 +1,43 @@
 # Servers where players can enter the queue.
-# These should match server names defined in velocity.toml.
+# These must match server names defined in velocity.toml.
 queue-servers:
   - lobby
   - survival
   - creative
 
-# Game servers that are allowed to request players from the queue.
-# These should match server names defined in velocity.toml.
-# Add as many as you want — the queue will distribute players to whichever
-# server has an open slot first.
-# Leave empty to allow any backend server to request players (not recommended
-# for production — set explicit names when running multiple servers).
+# Game servers that are allowed to pull players from the queue.
+# These must match server names defined in velocity.toml.
+# Add as many as you want — the queue fills them in order, concentrating
+# players on one server before moving to the next.
+# Leave empty to allow any backend server (not recommended for production).
 game-servers:
   - plantit-1
+  - plantit-2
+  - plantit-3
 
-# How often (in seconds) to broadcast queue position updates to waiting players.
+# How often (in seconds) to push position updates to queued players.
 position-broadcast-interval: 3
 
-# Maximum players to fill into one game server before starting to fill the next.
-# Set this to match your game's max player count (e.g. 10 for a 5v5 game).
+# How many players to fill into one game server before starting to fill the next.
+# Set this to match your game's player capacity (e.g. 10 for a 5v5 match).
 max-players-per-server: 10
 
 # ── Debug mode ───────────────────────────────────────────────────────────────
 # When enabled, players are dispatched to the first reachable game server
 # immediately on joining the queue — no SLOT_OPEN signal required.
-# Use for local testing only. Requires /queue reload to take effect.
+# For local testing only. Toggle with /piq reload to take effect.
 debug:
   enabled: false
 
 # ── Pterodactyl auto-scaler (optional) ───────────────────────────────────────
-# When enabled, the queue will automatically start game servers when demand is
-# high and stop them when idle. Requires pre-created server allocations in your
-# Pterodactyl panel.
+# When enabled, the queue automatically starts game servers when players have
+# no server assigned and stops idle servers to save resources.
+# Requires pre-created server allocations in your Pterodactyl panel —
+# the scaler starts and stops them, it does not create new ones.
 pterodactyl:
   enabled: false
   panel-url: "https://panel.example.com"
   api-key: "ptlc_your_client_api_key_here"
-
-  # Start a new server when the queue exceeds this many players.
-  scale-up-threshold: 8
 
   # Stop an empty server after it has been idle for this many minutes.
   # Has no effect on servers marked always-on: true.
@@ -46,6 +45,7 @@ pterodactyl:
 
   # Map each Velocity server name to its Pterodactyl server identifier.
   # The identifier is the short ID shown in your panel URL (e.g. abc12345).
+  # Server names here must also appear in game-servers above.
   servers:
     plantit-1:
       identifier: "abc12345"

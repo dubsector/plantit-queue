@@ -33,9 +33,15 @@ queue-servers:
 # Empty list = accept slot signals from any backend server.
 game-servers:
   - plantit-1
+  - plantit-2
+  - plantit-3
 
 # How often (seconds) to push position updates to queued players
 position-broadcast-interval: 3
+
+# Max players to fill into one server before starting to fill the next.
+# Match this to your game's player capacity.
+max-players-per-server: 10
 
 # Debug mode — bypasses the queue and instantly dispatches players.
 # For local testing only. Requires /piq reload to take effect.
