@@ -44,15 +44,26 @@ public class PiqCommand implements SimpleCommand {
 
         switch (sub) {
             case "vote" -> {
+                if (args.length < 2) {
+                    invocation.source().sendMessage(PREFIX.append(
+                            Component.text("Usage: /piq vote <map>  or  /piq vote <on|off> (admin)", NamedTextColor.RED)));
+                    return;
+                }
+                // Admin on/off toggle
+                if ((args[1].equalsIgnoreCase("on") || args[1].equalsIgnoreCase("off"))
+                        && invocation.source().hasPermission("plantit.admin")) {
+                    boolean enable = args[1].equalsIgnoreCase("on");
+                    queueManager.setVoteEnabled(enable);
+                    invocation.source().sendMessage(PREFIX.append(
+                            Component.text("Map voting " + (enable ? "enabled" : "disabled") + ".",
+                                    enable ? NamedTextColor.GREEN : NamedTextColor.YELLOW)));
+                    return;
+                }
+                // Player voting during a vote session
                 requirePlayer(invocation, player -> {
                     if (!queueManager.isCommitted(player.getUniqueId())) {
                         player.sendMessage(PREFIX.append(
                                 Component.text("You are not in a map vote.", NamedTextColor.RED)));
-                        return;
-                    }
-                    if (args.length < 2) {
-                        player.sendMessage(PREFIX.append(
-                                Component.text("Usage: /piq vote <map>", NamedTextColor.RED)));
                         return;
                     }
                     boolean voted = queueManager.vote(player.getUniqueId(), args[1]);
@@ -232,9 +243,11 @@ public class PiqCommand implements SimpleCommand {
                 .append(Component.text("— Leave the queue", NamedTextColor.GRAY)));
         invocation.source().sendMessage(Component.text("  /piq pos        ", NamedTextColor.GREEN)
                 .append(Component.text("— Check your position", NamedTextColor.GRAY)));
-        invocation.source().sendMessage(Component.text("  /piq vote <map> ", NamedTextColor.GREEN)
+        invocation.source().sendMessage(Component.text("  /piq vote <map>          ", NamedTextColor.GREEN)
                 .append(Component.text("— Vote for a map (during vote phase)", NamedTextColor.GRAY)));
         if (isAdmin) {
+            invocation.source().sendMessage(Component.text("  /piq vote <on|off>      ", NamedTextColor.GOLD)
+                    .append(Component.text("— Enable/disable map voting at runtime", NamedTextColor.GRAY)));
             invocation.source().sendMessage(Component.text("  /piq stats          ", NamedTextColor.GOLD)
                     .append(Component.text("— Show queue statistics", NamedTextColor.GRAY)));
             invocation.source().sendMessage(Component.text("  /piq stop           ", NamedTextColor.GOLD)

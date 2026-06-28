@@ -16,6 +16,7 @@ public class QueueConfig {
     private int broadcastInterval = 3;
     private int maxPlayersPerServer = 10;
     private boolean debugMode = false;
+    private boolean voteEnabled = true;
     private int voteDuration = 30;
     private String defaultMap = "";
     private List<String> maps = List.of();
@@ -44,6 +45,7 @@ public class QueueConfig {
         config.broadcastInterval = root.node("position-broadcast-interval").getInt(3);
         config.maxPlayersPerServer = root.node("max-players-per-server").getInt(10);
         config.debugMode = root.node("debug", "enabled").getBoolean(false);
+        config.voteEnabled = root.node("vote", "enabled").getBoolean(true);
         config.voteDuration = root.node("vote", "duration").getInt(30);
         config.defaultMap  = root.node("vote", "default-map").getString("");
         config.maps = root.node("vote", "maps").getList(String.class, List.of());
@@ -81,8 +83,9 @@ public class QueueConfig {
         return debugMode;
     }
 
-    public int getVoteDuration()  { return voteDuration; }
-    public String getDefaultMap() { return defaultMap; }
-    public List<String> getMaps() { return maps; }
-    public boolean hasVoteMaps()  { return !maps.isEmpty(); }
+    public boolean isVoteEnabled()  { return voteEnabled; }
+    public int getVoteDuration()    { return voteDuration; }
+    public String getDefaultMap()   { return defaultMap; }
+    public List<String> getMaps()   { return maps; }
+    public boolean hasVoteMaps()    { return !maps.isEmpty(); }
 }

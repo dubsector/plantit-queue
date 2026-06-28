@@ -74,6 +74,8 @@ public class QueueManager {
 
     private boolean stopped = false;
     private QueueScaler scaler = null;
+    /** Runtime override: null = defer to config, true/false = admin-forced. */
+    private Boolean voteEnabledOverride = null;
 
     // Metrics — persisted in memory for Plan integration
     private final AtomicLong totalQueueJoins = new AtomicLong(0);
@@ -95,6 +97,14 @@ public class QueueManager {
 
     public void setPlugin(PlantItQueue plugin) {
         this.plugin = plugin;
+    }
+
+    public void setVoteEnabled(boolean enabled) {
+        this.voteEnabledOverride = enabled;
+    }
+
+    public boolean isVoteEnabled() {
+        return voteEnabledOverride != null ? voteEnabledOverride : config.isVoteEnabled();
     }
 
     public void setScaler(QueueScaler scaler) {
@@ -285,7 +295,7 @@ public class QueueManager {
      * If maps are not configured, falls back to immediate dispatch.
      */
     public void startVoteSession(int count, RegisteredServer destination) {
-        if (!config.hasVoteMaps() || plugin == null) {
+        if (!isVoteEnabled() || !config.hasVoteMaps() || plugin == null) {
             dispatchPlayers(count, destination);
             return;
         }

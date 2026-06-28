@@ -24,8 +24,9 @@ max-players-per-server: 10
 # seconds before being routed. The game server receives MAP_SELECTED:<name> and
 # loads the matching config. Leave maps empty to skip voting and dispatch immediately.
 vote:
+  enabled: true         # set false to skip voting and load the default-map immediately
   duration: 30          # seconds players have to vote (default: 30)
-  default-map: dust2    # used when no votes are cast or as the tiebreaker
+  default-map: dust2    # used when voting is off, no votes are cast, or as the tiebreaker
   maps:
     - dust2
     - mirage
