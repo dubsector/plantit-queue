@@ -61,6 +61,7 @@ public class PlantItQueue {
         }
 
         queueManager = new QueueManager(server, config, logger);
+        queueManager.setPlugin(this);
         queueManager.loadMetrics(dataDirectory.resolve("metrics.properties"));
 
         server.getChannelRegistrar().register(QUEUE_CHANNEL);

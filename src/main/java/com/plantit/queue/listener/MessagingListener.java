@@ -51,8 +51,8 @@ public class MessagingListener {
             try {
                 int count = Integer.parseInt(message.substring("SLOT_OPEN:".length()).trim());
                 if (count > 0) {
-                    logger.info("Server '{}' signalled {} open slot(s) — dispatching from queue.", serverName, count);
-                    queueManager.dispatchPlayers(count, source.getServer());
+                    logger.info("Server '{}' signalled {} open slot(s) — starting map vote.", serverName, count);
+                    queueManager.startVoteSession(count, source.getServer());
                 }
             } catch (NumberFormatException ignored) {
                 logger.warn("Malformed SLOT_OPEN message from '{}': {}", serverName, message);

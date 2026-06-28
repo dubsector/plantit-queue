@@ -2,6 +2,7 @@ package com.plantit.queue;
 
 import com.plantit.queue.config.QueueConfig;
 import com.plantit.queue.scaler.QueueScaler;
+import com.plantit.queue.vote.VoteSession;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
@@ -53,6 +54,7 @@ public class QueueManager {
     private final ProxyServer proxy;
     private final Logger logger;
     private QueueConfig config;
+    private PlantItQueue plugin;
 
     /** Global queue — defines position order and membership. */
     private final LinkedList<UUID> queue = new LinkedList<>();
@@ -66,6 +68,9 @@ public class QueueManager {
      */
     private final Map<UUID, String> assignment = new HashMap<>();
     private final Map<String, LinkedList<UUID>> serverQueues = new LinkedHashMap<>();
+
+    /** Vote session tracking: committed players waiting for map vote to end. */
+    private final Map<UUID, VoteSession> committedToSession = new HashMap<>();
 
     private boolean stopped = false;
     private QueueScaler scaler = null;
@@ -86,6 +91,10 @@ public class QueueManager {
     public void updateConfig(QueueConfig config) {
         this.config = config;
         tryAssignUnassigned();
+    }
+
+    public void setPlugin(PlantItQueue plugin) {
+        this.plugin = plugin;
     }
 
     public void setScaler(QueueScaler scaler) {
@@ -196,7 +205,11 @@ public class QueueManager {
         lastKnownPosition.remove(uuid);
         unassign(uuid);
 
-        if (removed) {
+        // Also remove from any active vote session
+        VoteSession session = committedToSession.remove(uuid);
+        if (session != null) session.removePlayer(uuid);
+
+        if (removed || session != null) {
             proxy.getPlayer(uuid).ifPresent(p -> {
                 if (bar != null) p.hideBossBar(bar);
                 p.sendMessage(PREFIX.append(Component.text("You left the queue.", NamedTextColor.GRAY)));
@@ -258,6 +271,95 @@ public class QueueManager {
         }
 
         // Notify scaler — players remain unassigned until a server signals SLOT_OPEN
+        if (scaler != null && getUnassignedCount() > 0) {
+            scaler.notifyUnassignedPlayers(getUnassignedCount());
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Map vote
+    // -------------------------------------------------------------------------
+
+    /**
+     * Commits the next {@code count} queued players to a vote session for {@code destination}.
+     * If maps are not configured, falls back to immediate dispatch.
+     */
+    public void startVoteSession(int count, RegisteredServer destination) {
+        if (!config.hasVoteMaps() || plugin == null) {
+            dispatchPlayers(count, destination);
+            return;
+        }
+        if (queue.size() < count) count = queue.size();
+        if (count == 0) return;
+
+        String serverName = destination.getServerInfo().getName();
+        List<UUID> committed = new java.util.ArrayList<>();
+
+        for (int i = 0; i < count; i++) {
+            UUID uuid = queue.poll();
+            if (uuid == null) break;
+            assignment.remove(uuid);
+            committed.add(uuid);
+
+            BossBar bar = bossBars.remove(uuid);
+            lastKnownPosition.remove(uuid);
+            proxy.getPlayer(uuid).ifPresent(p -> {
+                if (bar != null) p.hideBossBar(bar);
+                clearTabList(p);
+            });
+        }
+
+        if (committed.isEmpty()) return;
+
+        VoteSession session = new VoteSession(
+                committed,
+                destination,
+                config.getMaps(),
+                config.getDefaultMap(),
+                config.getVoteDuration(),
+                proxy, plugin, this, logger);
+
+        committed.forEach(uuid -> committedToSession.put(uuid, session));
+
+        logger.info("Map vote started for '{}' — {} player(s), {}s window, maps: {}",
+                serverName, committed.size(), config.getVoteDuration(), config.getMaps());
+        session.start();
+    }
+
+    /** Records a map vote for a committed player. Returns false if they are not in a vote. */
+    public boolean vote(UUID uuid, String map) {
+        VoteSession session = committedToSession.get(uuid);
+        if (session == null) return false;
+        return session.vote(uuid, map);
+    }
+
+    public boolean isCommitted(UUID uuid) {
+        return committedToSession.containsKey(uuid);
+    }
+
+    /** Called by VoteSession when the vote ends — dispatches the specific committed players. */
+    public void dispatchCommitted(List<UUID> committed, RegisteredServer destination) {
+        String serverName = destination.getServerInfo().getName();
+
+        for (UUID uuid : committed) {
+            committedToSession.remove(uuid);
+            totalDispatches.incrementAndGet();
+            serverDispatchCounts.computeIfAbsent(serverName, k -> new AtomicLong()).incrementAndGet();
+            playerLastServer.put(uuid, serverName);
+
+            proxy.getPlayer(uuid).ifPresent(p -> {
+                p.showTitle(Title.title(
+                        Component.text("Connecting...", NamedTextColor.GREEN, TextDecoration.BOLD),
+                        Component.text("Get ready to play!", NamedTextColor.GRAY),
+                        Title.Times.times(Duration.ofMillis(100), Duration.ofMillis(3000), Duration.ofMillis(500))));
+                p.sendMessage(Component.empty());
+                p.sendMessage(PREFIX.append(
+                        Component.text("Found a match! Connecting you to the server...", NamedTextColor.GREEN)));
+                p.sendMessage(Component.empty());
+                p.createConnectionRequest(destination).fireAndForget();
+            });
+        }
+
         if (scaler != null && getUnassignedCount() > 0) {
             scaler.notifyUnassignedPlayers(getUnassignedCount());
         }

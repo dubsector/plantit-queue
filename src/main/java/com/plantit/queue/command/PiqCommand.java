@@ -43,6 +43,25 @@ public class PiqCommand implements SimpleCommand {
         String sub = args.length > 0 ? args[0].toLowerCase() : "";
 
         switch (sub) {
+            case "vote" -> {
+                requirePlayer(invocation, player -> {
+                    if (!queueManager.isCommitted(player.getUniqueId())) {
+                        player.sendMessage(PREFIX.append(
+                                Component.text("You are not in a map vote.", NamedTextColor.RED)));
+                        return;
+                    }
+                    if (args.length < 2) {
+                        player.sendMessage(PREFIX.append(
+                                Component.text("Usage: /piq vote <map>", NamedTextColor.RED)));
+                        return;
+                    }
+                    boolean voted = queueManager.vote(player.getUniqueId(), args[1]);
+                    if (!voted) {
+                        player.sendMessage(PREFIX.append(
+                                Component.text("Unknown map '" + args[1] + "'.", NamedTextColor.RED)));
+                    }
+                });
+            }
             case "join" -> {
                 requirePlayer(invocation, player -> queueManager.enqueue(player));
             }
@@ -207,12 +226,14 @@ public class PiqCommand implements SimpleCommand {
         invocation.source().sendMessage(Component.empty());
         invocation.source().sendMessage(PREFIX.append(
                 Component.text("Commands", NamedTextColor.WHITE, TextDecoration.BOLD)));
-        invocation.source().sendMessage(Component.text("  /piq join    ", NamedTextColor.GREEN)
+        invocation.source().sendMessage(Component.text("  /piq join       ", NamedTextColor.GREEN)
                 .append(Component.text("— Join the queue", NamedTextColor.GRAY)));
-        invocation.source().sendMessage(Component.text("  /piq leave   ", NamedTextColor.GREEN)
+        invocation.source().sendMessage(Component.text("  /piq leave      ", NamedTextColor.GREEN)
                 .append(Component.text("— Leave the queue", NamedTextColor.GRAY)));
-        invocation.source().sendMessage(Component.text("  /piq pos     ", NamedTextColor.GREEN)
+        invocation.source().sendMessage(Component.text("  /piq pos        ", NamedTextColor.GREEN)
                 .append(Component.text("— Check your position", NamedTextColor.GRAY)));
+        invocation.source().sendMessage(Component.text("  /piq vote <map> ", NamedTextColor.GREEN)
+                .append(Component.text("— Vote for a map (during vote phase)", NamedTextColor.GRAY)));
         if (isAdmin) {
             invocation.source().sendMessage(Component.text("  /piq stats          ", NamedTextColor.GOLD)
                     .append(Component.text("— Show queue statistics", NamedTextColor.GRAY)));
@@ -237,11 +258,11 @@ public class PiqCommand implements SimpleCommand {
         if (invocation.arguments().length <= 1) {
             if (invocation.source().hasPermission("plantit.admin")) {
                 if (queueManager.isDebugMode()) {
-                    return List.of("join", "leave", "pos", "stats", "stop", "start", "reload", "front", "open");
+                    return List.of("join", "leave", "pos", "vote", "stats", "stop", "start", "reload", "front", "open");
                 }
-                return List.of("join", "leave", "pos", "stats", "stop", "start", "reload", "front");
+                return List.of("join", "leave", "pos", "vote", "stats", "stop", "start", "reload", "front");
             }
-            return List.of("join", "leave", "pos");
+            return List.of("join", "leave", "pos", "vote");
         }
         return List.of();
     }

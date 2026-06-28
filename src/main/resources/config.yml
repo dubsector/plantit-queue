@@ -19,6 +19,17 @@ position-broadcast-interval: 3
 # Set this to match your game's player capacity (e.g. 10 for a 5v5 match).
 max-players-per-server: 10
 
+# ── Map vote ─────────────────────────────────────────────────────────────────
+# When a game server signals SLOT_OPEN, committed players vote here for 'duration'
+# seconds before being routed. The game server receives MAP_SELECTED:<name> and
+# loads the matching config. Leave maps empty to skip voting and dispatch immediately.
+vote:
+  duration: 30          # seconds players have to vote (default: 30)
+  default-map: dust2    # used when no votes are cast or as the tiebreaker
+  maps:
+    - dust2
+    - mirage
+
 # ── Debug mode ───────────────────────────────────────────────────────────────
 # When enabled, players are dispatched to the first reachable game server
 # immediately on joining the queue — no SLOT_OPEN signal required.
