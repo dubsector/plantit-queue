@@ -13,6 +13,14 @@
     <description>Proxy-level queue system for Plant It game servers</description>
     <url>https://github.com/dubsector/plantit-queue</url>
 
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/dubsector/plantit-queue</url>
+        </repository>
+    </distributionManagement>
+
     <licenses>
         <license>
             <name>GNU General Public License v3.0</name>
