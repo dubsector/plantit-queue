@@ -81,7 +81,9 @@ public class PlantItQueue {
                             .build()
                             .load());
             if (pteroConfig.isEnabled()) {
-                new QueueScaler(this, server, queueManager, pteroConfig, logger).start();
+                QueueScaler scaler = new QueueScaler(this, server, queueManager, pteroConfig, logger);
+                queueManager.setScaler(scaler);
+                scaler.start();
                 logger.info("Pterodactyl auto-scaler enabled ({} servers configured).",
                         pteroConfig.getServers().size());
             }

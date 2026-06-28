@@ -1,6 +1,7 @@
 package com.plantit.queue;
 
 import com.plantit.queue.config.QueueConfig;
+import com.plantit.queue.scaler.QueueScaler;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
@@ -42,15 +43,21 @@ public class QueueManager {
     private final Map<UUID, Integer> lastKnownPosition = new HashMap<>();
 
     private boolean stopped = false;
+    private QueueScaler scaler = null;
 
     public QueueManager(ProxyServer server, QueueConfig config) {
         this.server = server;
         this.config = config;
     }
 
-    /** Hot-swaps the config after a /queue reload. */
+    /** Hot-swaps the config after a /piq reload. */
     public void updateConfig(QueueConfig config) {
         this.config = config;
+    }
+
+    /** Wires in the optional Pterodactyl scaler so stop/start can notify it. */
+    public void setScaler(QueueScaler scaler) {
+        this.scaler = scaler;
     }
 
     /** Returns true if the player was added. */
@@ -239,9 +246,10 @@ public class QueueManager {
 
     // -------------------------------------------------------------------------
 
-    /** Disables the queue and clears all waiting players with a notification. */
+    /** Disables the queue, clears all waiting players, and notifies the scaler to drain servers. */
     public void stop() {
         stopped = true;
+        if (scaler != null) scaler.notifyQueueStopped();
         new LinkedList<>(queue).forEach(uuid -> {
             BossBar bar = bossBars.remove(uuid);
             lastKnownPosition.remove(uuid);
@@ -259,9 +267,10 @@ public class QueueManager {
         });
     }
 
-    /** Re-enables the queue so players can join again. */
+    /** Re-enables the queue and exits scaler drain mode. */
     public void start() {
         stopped = false;
+        if (scaler != null) scaler.notifyQueueStarted();
     }
 
     public boolean isStopped() {
