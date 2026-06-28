@@ -1,7 +1,6 @@
 package com.plantit.queue;
 
 import com.plantit.queue.command.PiqCommand;
-import com.plantit.queue.command.QueueCommand;
 import com.plantit.queue.config.QueueConfig;
 import com.plantit.queue.listener.ConnectionListener;
 import com.plantit.queue.listener.MessagingListener;
@@ -65,12 +64,8 @@ public class PlantItQueue {
         server.getEventManager().register(this, new MessagingListener(queueManager, config, logger));
 
         server.getCommandManager().register(
-                server.getCommandManager().metaBuilder("plantit").build(),
-                new QueueCommand(queueManager));
-
-        server.getCommandManager().register(
                 server.getCommandManager().metaBuilder("piq").build(),
-                new PiqCommand(this));
+                new PiqCommand(queueManager, this));
 
         final QueueConfig finalConfig = config;
         server.getScheduler()

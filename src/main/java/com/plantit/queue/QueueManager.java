@@ -90,7 +90,7 @@ public class QueueManager {
                 Component.text("Position: ", NamedTextColor.GRAY))
                 .append(Component.text("#" + pos, NamedTextColor.YELLOW))
                 .append(Component.text("  |  Use ", NamedTextColor.DARK_GRAY))
-                .append(Component.text("/queue leave", NamedTextColor.GREEN))
+                .append(Component.text("/piq leave", NamedTextColor.GREEN))
                 .append(Component.text(" to leave.", NamedTextColor.DARK_GRAY)));
         player.sendMessage(Component.empty());
 
@@ -217,7 +217,7 @@ public class QueueManager {
                         .append(Component.text("  |  ", NamedTextColor.DARK_GRAY))
                         .append(Component.text(total + " in queue", NamedTextColor.GRAY))
                         .append(Component.text("  |  ", NamedTextColor.DARK_GRAY))
-                        .append(Component.text("/queue leave", NamedTextColor.GREEN)));
+                        .append(Component.text("/piq leave", NamedTextColor.GREEN)));
 
                 // Tab list
                 updateTabList(p, finalPos, total);
@@ -262,7 +262,7 @@ public class QueueManager {
                 .append(Component.text("  of  ", NamedTextColor.DARK_GRAY))
                 .append(Component.text(total, NamedTextColor.GRAY))
                 .append(Component.text("\n  ", NamedTextColor.GRAY))
-                .append(Component.text("/queue leave", NamedTextColor.GREEN))
+                .append(Component.text("/piq leave", NamedTextColor.GREEN))
                 .append(Component.text(" to leave  \n", NamedTextColor.GRAY));
 
         player.getTabList().setHeaderAndFooter(header, footer);
