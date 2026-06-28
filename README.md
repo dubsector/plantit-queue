@@ -5,6 +5,7 @@
 [![Dependency Check](https://github.com/dubsector/plantit-queue/actions/workflows/dependency-check.yml/badge.svg)](https://github.com/dubsector/plantit-queue/actions/workflows/dependency-check.yml)
 [![Zizmor](https://github.com/dubsector/plantit-queue/actions/workflows/zizmor.yml/badge.svg)](https://github.com/dubsector/plantit-queue/actions/workflows/zizmor.yml)
 [![Security Policy](https://img.shields.io/badge/Security-Policy-green)](SECURITY.md)
+[![Dependabot](https://img.shields.io/badge/Dependabot-enabled-025E8C?logo=dependabot)](https://github.com/dubsector/plantit-queue/network/updates)
 
 Proxy-level queue system for [Plant It](https://github.com/dubsector/plantit) game servers, running on [Velocity](https://papermc.io/software/velocity).
 
