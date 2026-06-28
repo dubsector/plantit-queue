@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
         name = "PlantIt Queue",
         version = "1.0.0-SNAPSHOT",
         description = "Proxy-level queue system for Plant It game servers",
-        authors = {}
+        authors = {"dubsector"}
 )
 public class PlantItQueue {
 
