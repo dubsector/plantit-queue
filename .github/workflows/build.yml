@@ -91,7 +91,7 @@ jobs:
           VEL_VERSION=$(curl -fsSL "https://api.papermc.io/v2/projects/velocity" \
             | python3 -c "import sys,json; vs=json.load(sys.stdin)['versions']; print(vs[-1])")
           BUILD_INFO=$(curl -fsSL "https://api.papermc.io/v2/projects/velocity/versions/${VEL_VERSION}/builds" \
-            | python3 -c "import sys,json; builds=json.load(sys.stdin)['builds']; stable=[b for b in builds if b.get('channel','')=='default']; chosen=(stable or builds)[-1]; print(chosen['build'], chosen['downloads']['server']['sha256'])")
+            | python3 -c "import sys,json; builds=json.load(sys.stdin)['builds']; stable=[b for b in builds if b.get('channel','')=='default']; chosen=(stable or builds)[-1]; print(chosen['build'], chosen['downloads']['application']['sha256'])")
           BUILD=$(echo "$BUILD_INFO" | awk '{print $1}')
           EXPECTED_SHA=$(echo "$BUILD_INFO" | awk '{print $2}')
           JAR_NAME="velocity-${VEL_VERSION}-${BUILD}.jar"
@@ -240,7 +240,7 @@ jobs:
           VEL_VERSION=$(curl -fsSL "https://api.papermc.io/v2/projects/velocity" \
             | python3 -c "import sys,json; vs=json.load(sys.stdin)['versions']; print(vs[-1])")
           BUILD_INFO=$(curl -fsSL "https://api.papermc.io/v2/projects/velocity/versions/${VEL_VERSION}/builds" \
-            | python3 -c "import sys,json; builds=json.load(sys.stdin)['builds']; stable=[b for b in builds if b.get('channel','')=='default']; chosen=(stable or builds)[-1]; print(chosen['build'], chosen['downloads']['server']['sha256'])")
+            | python3 -c "import sys,json; builds=json.load(sys.stdin)['builds']; stable=[b for b in builds if b.get('channel','')=='default']; chosen=(stable or builds)[-1]; print(chosen['build'], chosen['downloads']['application']['sha256'])")
           BUILD=$(echo "$BUILD_INFO" | awk '{print $1}')
           EXPECTED_SHA=$(echo "$BUILD_INFO" | awk '{print $2}')
           JAR_NAME="velocity-${VEL_VERSION}-${BUILD}.jar"
