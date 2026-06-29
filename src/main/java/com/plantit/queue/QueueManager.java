@@ -167,6 +167,7 @@ public class QueueManager {
         updateTabList(player, pos, queue.size(), null);
         lastKnownPosition.put(player.getUniqueId(), pos);
 
+        tryStartGame();
         return true;
     }
 
@@ -285,6 +286,31 @@ public class QueueManager {
         if (scaler != null && getUnassignedCount() > 0) {
             scaler.notifyUnassignedPlayers(getUnassignedCount());
         }
+    }
+
+    // -------------------------------------------------------------------------
+    // Auto-start
+    // -------------------------------------------------------------------------
+
+    /**
+     * Called after every enqueue. When the queue holds enough players for a full
+     * game and a server is available, starts the vote + dispatch without waiting
+     * for a SLOT_OPEN signal from the backend.
+     */
+    private void tryStartGame() {
+        int cap = config.getMaxPlayersPerServer();
+        if (queue.size() < cap) return;
+
+        String serverName = pickServer();
+        if (serverName == null) {
+            if (scaler != null) scaler.notifyUnassignedPlayers(getUnassignedCount());
+            return;
+        }
+
+        proxy.getServer(serverName).ifPresent(server -> {
+            logger.info("Queue reached capacity ({}) — starting game on '{}'.", cap, serverName);
+            startVoteSession(cap, server);
+        });
     }
 
     // -------------------------------------------------------------------------
