@@ -21,7 +21,6 @@ jobs:
     outputs:
       version: ${{ steps.ver.outputs.version }}
       short_sha: ${{ steps.sha.outputs.short_sha }}
-      velocity_version: ${{ steps.vel_ver.outputs.velocity_version }}
     steps:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -58,20 +57,6 @@ jobs:
         id: ver
         run: echo "version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_OUTPUT
 
-      - name: Get Velocity API version from pom.xml
-        id: vel_ver
-        run: |
-          VEL=$(python3 -c "
-          import xml.etree.ElementTree as ET
-          ns = {'m': 'http://maven.apache.org/POM/4.0.0'}
-          root = ET.parse('pom.xml').getroot()
-          deps = root.findall('.//m:dependency', ns)
-          vel = next(d for d in deps if d.find('m:artifactId', ns).text == 'velocity-api')
-          print(vel.find('m:version', ns).text)
-          ")
-          echo "velocity_version=${VEL}" >> $GITHUB_OUTPUT
-          echo "Velocity API version: ${VEL}"
-
       - name: Get short SHA
         id: sha
         run: echo "short_sha=${GITHUB_SHA:0:7}" >> $GITHUB_OUTPUT
@@ -103,7 +88,8 @@ jobs:
 
       - name: Resolve and download Velocity JAR
         run: |
-          VEL_VERSION="${{ needs.build.outputs.velocity_version }}"
+          VEL_VERSION=$(curl -fsSL "https://api.papermc.io/v2/projects/velocity" \
+            | python3 -c "import sys,json; vs=json.load(sys.stdin)['versions']; print(vs[-1])")
           BUILD_INFO=$(curl -fsSL "https://api.papermc.io/v2/projects/velocity/versions/${VEL_VERSION}/builds" \
             | python3 -c "import sys,json; builds=json.load(sys.stdin)['builds']; chosen=builds[-1]; print(chosen['build'], chosen['downloads']['application']['sha256'])")
           BUILD=$(echo "$BUILD_INFO" | awk '{print $1}')
@@ -251,7 +237,8 @@ jobs:
 
       - name: Resolve and download Velocity JAR
         run: |
-          VEL_VERSION="${{ needs.build.outputs.velocity_version }}"
+          VEL_VERSION=$(curl -fsSL "https://api.papermc.io/v2/projects/velocity" \
+            | python3 -c "import sys,json; vs=json.load(sys.stdin)['versions']; print(vs[-1])")
           BUILD_INFO=$(curl -fsSL "https://api.papermc.io/v2/projects/velocity/versions/${VEL_VERSION}/builds" \
             | python3 -c "import sys,json; builds=json.load(sys.stdin)['builds']; chosen=builds[-1]; print(chosen['build'], chosen['downloads']['application']['sha256'])")
           BUILD=$(echo "$BUILD_INFO" | awk '{print $1}')
