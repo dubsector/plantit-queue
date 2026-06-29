@@ -15,8 +15,11 @@ game-servers:
 # How often (in seconds) to push position updates to queued players.
 position-broadcast-interval: 3
 
-# How many players to fill into one game server before starting to fill the next.
-# Set this to match your game's player capacity (e.g. 10 for a 5v5 match).
+# Minimum players needed in the queue before a game starts automatically.
+# Should match min-players in the game server's config.yml.
+min-players-to-start: 2
+
+# Maximum players sent to one game server (full lobby size, e.g. 10 for 5v5).
 max-players-per-server: 10
 
 # ── Map vote ─────────────────────────────────────────────────────────────────

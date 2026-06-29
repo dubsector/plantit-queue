@@ -298,8 +298,8 @@ public class QueueManager {
      * for a SLOT_OPEN signal from the backend.
      */
     private void tryStartGame() {
-        int cap = config.getMaxPlayersPerServer();
-        if (queue.size() < cap) return;
+        if (queue.size() < config.getMinPlayersToStart()) return;
+        int cap = Math.min(queue.size(), config.getMaxPlayersPerServer());
 
         String serverName = pickServer();
         if (serverName == null) {

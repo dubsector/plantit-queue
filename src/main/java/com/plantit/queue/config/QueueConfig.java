@@ -14,6 +14,7 @@ public class QueueConfig {
     private List<String> queueServers = List.of("First Capital");
     private List<String> gameServers = List.of();
     private int broadcastInterval = 3;
+    private int minPlayersToStart = 2;
     private int maxPlayersPerServer = 10;
     private boolean debugMode = false;
     private boolean voteEnabled = true;
@@ -43,6 +44,7 @@ public class QueueConfig {
         config.queueServers = root.node("queue-servers").getList(String.class, List.of("lobby"));
         config.gameServers = root.node("game-servers").getList(String.class, List.of());
         config.broadcastInterval = root.node("position-broadcast-interval").getInt(3);
+        config.minPlayersToStart = root.node("min-players-to-start").getInt(2);
         config.maxPlayersPerServer = root.node("max-players-per-server").getInt(10);
         config.debugMode = root.node("debug", "enabled").getBoolean(false);
         config.voteEnabled = root.node("vote", "enabled").getBoolean(true);
@@ -75,9 +77,8 @@ public class QueueConfig {
         return broadcastInterval;
     }
 
-    public int getMaxPlayersPerServer() {
-        return maxPlayersPerServer;
-    }
+    public int getMinPlayersToStart()   { return minPlayersToStart; }
+    public int getMaxPlayersPerServer() { return maxPlayersPerServer; }
 
     public boolean isDebugMode() {
         return debugMode;
