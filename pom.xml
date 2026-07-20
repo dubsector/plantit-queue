@@ -50,7 +50,7 @@
         <dependency>
             <groupId>com.velocitypowered</groupId>
             <artifactId>velocity-api</artifactId>
-            <version>3.5.0-SNAPSHOT</version>
+            <version>3.5.1</version>
             <scope>provided</scope>
         </dependency>
         <!-- Plan Player Analytics — optional soft dependency for queue metrics -->
@@ -65,7 +65,7 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>6.1.0</version>
+            <version>6.1.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -89,7 +89,7 @@
                         <path>
                             <groupId>com.velocitypowered</groupId>
                             <artifactId>velocity-api</artifactId>
-                            <version>3.5.0-SNAPSHOT</version>
+                            <version>3.5.1</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
