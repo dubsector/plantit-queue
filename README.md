@@ -14,7 +14,7 @@ Players on any configured server (lobby, survival, creative, etc.) can queue for
 
 ## Requirements
 
-- Velocity 3.3.x
+- Velocity 3.5.x
 - Java 21
 
 ## Installation
