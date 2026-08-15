@@ -33,6 +33,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
+        <!-- The proxy version this plugin targets. Keep in lockstep with
+             VEL_VERSION in .github/workflows/build.yml and the version quoted
+             in the README and release notes. -->
+        <velocity.version>3.5.1</velocity.version>
     </properties>
 
     <repositories>
@@ -50,7 +54,7 @@
         <dependency>
             <groupId>com.velocitypowered</groupId>
             <artifactId>velocity-api</artifactId>
-            <version>3.5.0-SNAPSHOT</version>
+            <version>${velocity.version}</version>
             <scope>provided</scope>
         </dependency>
         <!-- Plan Player Analytics — optional soft dependency for queue metrics -->
@@ -89,7 +93,7 @@
                         <path>
                             <groupId>com.velocitypowered</groupId>
                             <artifactId>velocity-api</artifactId>
-                            <version>3.5.0-SNAPSHOT</version>
+                            <version>${velocity.version}</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>

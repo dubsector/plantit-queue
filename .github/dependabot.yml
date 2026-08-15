@@ -9,6 +9,11 @@ updates:
     cooldown:
       default-days: 7
       semver-major-days: 14
+    ignore:
+      # velocity-api is the proxy version this plugin targets, not just a
+      # dependency. It must stay in lockstep with VEL_VERSION in build.yml,
+      # so retargeting the proxy is a deliberate change made by hand.
+      - dependency-name: "com.velocitypowered:velocity-api"
     groups:
       maven-dependencies:
         patterns:
